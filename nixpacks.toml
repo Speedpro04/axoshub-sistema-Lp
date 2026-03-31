@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm run build --workspace apps/solara-connect"]
+
+[start]
+cmd = "npm start --workspace apps/solara-connect"
