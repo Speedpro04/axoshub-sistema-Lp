@@ -318,6 +318,7 @@ export default function CentralApp() {
   const [privacyClientId, setPrivacyClientId] = useState("");
   const [privacyStatus, setPrivacyStatus] = useState<string | null>(null);
   const [privacyLoading, setPrivacyLoading] = useState(false);
+  const [lastDashboardUpdate, setLastDashboardUpdate] = useState<Date | null>(null);
 
   const [editingClient, setEditingClient] = useState<ClientRow | null>(null);
   const [editingSpecialist, setEditingSpecialist] = useState<SpecialistRow | null>(null);
@@ -586,6 +587,7 @@ export default function CentralApp() {
       const status = await fetchSolaraStatus();
       setSolaraStatus(status);
       setLoading(false);
+      setLastDashboardUpdate(new Date());
     }
     if (selectedTenantId) {
       setActiveTenantId(selectedTenantId);
@@ -1505,6 +1507,50 @@ export default function CentralApp() {
     setAtendimentoModalOpen(true);
   };
 
+  const handleAtendimentoQuickAction = async (id: string, status: string) => {
+    setAtendimentos((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status } : item))
+    );
+    const updated = await updateAtendimentoStatus(id, status);
+    if (!updated) {
+      setSaveError("Falha ao atualizar atendimento. Tente novamente.");
+      const refreshed = await fetchDashboardData();
+      setAtendimentos(refreshed.atendimentos);
+    }
+  };
+
+  const handleAgendarFromAtendimento = (clienteId: string | null) => {
+    if (clienteId) {
+      setNewAppointment((prev) => ({
+        ...prev,
+        cliente_id: clienteId,
+      }));
+    }
+    setAgendaModalOpen(true);
+  };
+
+  const formatRelativeMinutes = (value?: string | null) => {
+    if (!value) return "há alguns minutos";
+    const diffMs = Date.now() - new Date(value).getTime();
+    if (Number.isNaN(diffMs)) return "há alguns minutos";
+    const minutes = Math.max(1, Math.round(diffMs / 60000));
+    return `há ${minutes} min`;
+  };
+
+  const getFilaBadge = (status: string, criadoEm?: string | null) => {
+    if (status === "Em andamento") return "fila-badge fila-badge--green";
+    if (status === "Concluído") return "fila-badge fila-badge--dark";
+    if (status === "Novo") return "fila-badge fila-badge--blue";
+    if (status === "Aguardando") {
+      const minutes = criadoEm
+        ? Math.round((Date.now() - new Date(criadoEm).getTime()) / 60000)
+        : 0;
+      if (minutes >= 10) return "fila-badge fila-badge--red";
+      return "fila-badge fila-badge--yellow";
+    }
+    return "fila-badge";
+  };
+
   const handleKanbanDragStart = (event: React.DragEvent<HTMLDivElement>, id: string) => {
     event.dataTransfer.setData("text/plain", id);
     event.dataTransfer.effectAllowed = "move";
@@ -1774,6 +1820,7 @@ export default function CentralApp() {
           status,
           cliente: clientMap[item.cliente_id ?? ""] ?? "Sem cliente",
           canal: item.canal ?? "Canal não informado",
+          criado_em: item.criado_em ?? null,
         }))
     )
     .slice(0, 6);
@@ -1913,6 +1960,34 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
+              <section className="dashboard-statusbar">
+                <div className={`status-chip ${loading ? "status-chip--warn" : ""}`}>
+                  <span
+                    className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
+                  />
+                  <div>
+                    <strong>{loading ? "Conexão instável" : "Sistema online"}</strong>
+                    <small>Atendimentos hoje: {atendimentos.length}</small>
+                  </div>
+                </div>
+                <div className="status-chip">
+                  <div>
+                    <strong>Tempo médio de espera</strong>
+                    <small>-- min</small>
+                  </div>
+                </div>
+                <div className="status-chip">
+                  <div>
+                    <strong>Última atualização</strong>
+                    <small>
+                      {lastDashboardUpdate
+                        ? formatTime(lastDashboardUpdate.toISOString())
+                        : "agora"}
+                    </small>
+                  </div>
+                </div>
+              </section>
+
               <section className="dashboard-actions">
                 <div className="dashboard-actions-main">
                   <button
@@ -1936,21 +2011,6 @@ export default function CentralApp() {
                   >
                     Agendar consulta
                   </button>
-                </div>
-                <div className="dashboard-actions-status">
-                  <div className="status-chip">
-                    <span className="status-dot status-dot--green" />
-                    <div>
-                      <strong>Sistema online</strong>
-                      <small>Atendimentos hoje: {atendimentos.length}</small>
-                    </div>
-                  </div>
-                  <div className="status-chip">
-                    <div>
-                      <strong>Tempo médio de espera</strong>
-                      <small>-- min</small>
-                    </div>
-                  </div>
                 </div>
               </section>
 
@@ -2000,9 +2060,45 @@ export default function CentralApp() {
                         <div key={item.id} className="queue-item">
                           <div>
                             <strong>{item.cliente}</strong>
-                            <small>{item.canal}</small>
+                            <small>
+                              {item.canal} · {formatRelativeMinutes(item.criado_em)}
+                            </small>
                           </div>
-                          <span className="queue-status">{item.status}</span>
+                          <div className="queue-actions">
+                            <span className={getFilaBadge(item.status, item.criado_em)}>
+                              {item.status}
+                            </span>
+                            <div className="queue-buttons">
+                              <button
+                                className="ghost"
+                                type="button"
+                                onClick={() =>
+                                  handleAtendimentoQuickAction(item.id, "Em andamento")
+                                }
+                              >
+                                Atender agora
+                              </button>
+                              <button
+                                className="ghost"
+                                type="button"
+                                onClick={() =>
+                                  handleAgendarFromAtendimento(
+                                    atendimentos.find((a) => a.id === item.id)?.cliente_id ??
+                                      null
+                                  )
+                                }
+                              >
+                                Agendar
+                              </button>
+                              <button
+                                className="ghost"
+                                type="button"
+                                onClick={() => handleAtendimentoQuickAction(item.id, "Concluído")}
+                              >
+                                Finalizar
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       ))
                     )}
@@ -2137,6 +2233,16 @@ export default function CentralApp() {
                 </motion.div>
               </section>
             </motion.div>
+          )}
+          {activeSection === "dashboard" && (
+            <button
+              className="floating-action"
+              type="button"
+              onClick={() => setAtendimentoModalOpen(true)}
+              aria-label="Novo atendimento"
+            >
+              + Novo atendimento
+            </button>
           )}
 
           {activeSection === "kanban" && (

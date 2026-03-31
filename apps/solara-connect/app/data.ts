@@ -53,6 +53,7 @@ export type AtendimentoRow = {
   status: string;
   canal: string | null;
   responsavel: string | null;
+  criado_em?: string | null;
   tenant_id?: string | null;
 };
 
@@ -271,7 +272,7 @@ export async function fetchDashboardData() {
       safeQuery<AtendimentoRow>(
         client,
         "atendimentos",
-        "id, cliente_id, status, canal, responsavel",
+        "id, cliente_id, status, canal, responsavel, criado_em",
         30,
         tenantId
       ),

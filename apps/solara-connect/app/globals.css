@@ -429,6 +429,13 @@ body {
   gap: 20px;
 }
 
+.dashboard-statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .dashboard-actions {
   display: flex;
   flex-wrap: wrap;
@@ -465,6 +472,11 @@ body {
   border-radius: 999px;
   font-size: 0.85rem;
   color: var(--text);
+}
+
+.status-chip--warn {
+  border-color: rgba(253, 203, 110, 0.7);
+  background: rgba(253, 203, 110, 0.15);
 }
 
 .status-chip strong {
@@ -534,6 +546,50 @@ body {
   background: #ffffff;
 }
 
+.queue-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.queue-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.fila-badge {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #000d3d;
+  background: rgba(129, 236, 236, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.fila-badge--red {
+  background: rgba(255, 118, 117, 0.35);
+}
+
+.fila-badge--yellow {
+  background: rgba(253, 203, 110, 0.35);
+}
+
+.fila-badge--green {
+  background: rgba(85, 239, 196, 0.35);
+}
+
+.fila-badge--blue {
+  background: rgba(116, 185, 255, 0.35);
+}
+
+.fila-badge--dark {
+  background: rgba(178, 190, 195, 0.4);
+}
+
 .queue-item small {
   color: var(--subtle);
 }
@@ -552,6 +608,25 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.floating-action {
+  position: fixed;
+  right: 28px;
+  bottom: 32px;
+  z-index: 40;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: none;
+  background: #000d3d;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 16px 30px rgba(0, 13, 61, 0.25);
+  cursor: pointer;
+}
+
+.floating-action:hover {
+  transform: translateY(-2px);
 }
 
 .whatsapp-shell {
@@ -1389,6 +1464,10 @@ body {
 
   .dashboard-actions-main,
   .dashboard-actions-status {
+    width: 100%;
+  }
+
+  .dashboard-statusbar {
     width: 100%;
   }
 
