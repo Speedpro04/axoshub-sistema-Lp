@@ -300,6 +300,38 @@ export default function CentralApp() {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
   const [solaraStatus, setSolaraStatus] = useState<SolaraStatusRow | null>(null);
 
+  // --- Framer Motion Variants ---
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
+  };
+
+  const pulseVariants = {
+    pulse: {
+      scale: [1, 1.25, 1],
+      opacity: [0.7, 0.4, 0.7],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+      },
+    },
+  };
+
   const [kanbanFilter, setKanbanFilter] = useState("Todos");
   const [clientFilter, setClientFilter] = useState("Todos");
   const [specialistFilter, setSpecialistFilter] = useState("Todos");
@@ -1903,19 +1935,33 @@ export default function CentralApp() {
               </select>
             )}
             <div className="solara-status">
-              <span
-                className={`status-dot ${
-                  solaraStatus?.status === "human" ? "status-dot--red" : "status-dot--green"
-                }`}
-              />
+              <div style={{ position: "relative", width: 8, height: 8, marginRight: 8 }}>
+                <motion.span
+                  className={`status-dot ${
+                    solaraStatus?.status === "human" ? "status-dot--red" : "status-dot--green"
+                  }`}
+                  variants={pulseVariants}
+                  animate="pulse"
+                  style={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    zIndex: 1,
+                    margin: 0,
+                  }}
+                />
+                <span
+                  className={`status-dot ${
+                    solaraStatus?.status === "human" ? "status-dot--red" : "status-dot--green"
+                  }`}
+                  style={{ position: "relative", zIndex: 2, margin: 0 }}
+                />
+              </div>
               <span>
-                {solaraStatus?.status === "human"
-                  ? "Solicitação humana"
-                  : "Solara atendendo"}
+                {solaraStatus?.status === "human" ? "Solicitação humana" : "Solara atendendo"}
               </span>
-              {newEventsCount > 0 && (
-                <span className="event-badge">{newEventsCount}</span>
-              )}
+              {newEventsCount > 0 && <span className="event-badge">{newEventsCount}</span>}
             </div>
             <button
               className="ghost"
@@ -1955,16 +2001,32 @@ export default function CentralApp() {
           {activeSection === "dashboard" && (
             <motion.div
               key="dashboard"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              variants={containerVariants}
             >
-              <section className="dashboard-statusbar">
+              <motion.section className="dashboard-statusbar" variants={itemVariants}>
                 <div className={`status-chip ${loading ? "status-chip--warn" : ""}`}>
-                  <span
-                    className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
-                  />
+                  <div style={{ position: "relative", width: 8, height: 8, marginRight: 8 }}>
+                    <motion.span
+                      className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
+                      variants={pulseVariants}
+                      animate="pulse"
+                      style={{
+                        position: "absolute",
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        zIndex: 1,
+                        margin: 0,
+                      }}
+                    />
+                    <span
+                      className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
+                      style={{ position: "relative", zIndex: 2, margin: 0 }}
+                    />
+                  </div>
                   <div>
                     <strong>{loading ? "Conexão instável" : "Sistema online"}</strong>
                     <small>Atendimentos hoje: {atendimentos.length}</small>
@@ -1988,7 +2050,7 @@ export default function CentralApp() {
                 </div>
               </section>
 
-              <section className="dashboard-actions">
+              <motion.section className="dashboard-actions" variants={itemVariants}>
                 <div className="dashboard-actions-main">
                   <button
                     className="primary action-button"
@@ -2022,10 +2084,12 @@ export default function CentralApp() {
                   </div>
                   <div className="flow-cards">
                     {atendimentoColumns.map((status) => (
-                      <button
+                      <motion.button
                         key={status}
                         className="flow-card"
                         type="button"
+                        whileHover={{ y: -4, boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => {
                           setKanbanFilter(status);
                           setActiveSection("kanban");
@@ -2034,7 +2098,7 @@ export default function CentralApp() {
                         <strong>{status}</strong>
                         <span>{atendimentoCounts[status] ?? 0}</span>
                         <small>Clique para abrir</small>
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </motion.div>
@@ -2044,64 +2108,80 @@ export default function CentralApp() {
                     <span className="chip">Tempo real</span>
                   </div>
                   <div className="queue-list">
-                    {filaAtendimento.length === 0 ? (
-                      <div className="queue-empty">
-                        Nenhum atendimento agora.
-                        <button
-                          type="button"
-                          className="ghost"
-                          onClick={() => setAtendimentoModalOpen(true)}
+                    <AnimatePresence initial={false} mode="popLayout">
+                      {filaAtendimento.length === 0 ? (
+                        <motion.div
+                          key="empty"
+                          className="queue-empty"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
                         >
-                          Abrir atendimento
-                        </button>
-                      </div>
-                    ) : (
-                      filaAtendimento.map((item) => (
-                        <div key={item.id} className="queue-item">
-                          <div>
-                            <strong>{item.cliente}</strong>
-                            <small>
-                              {item.canal} · {formatRelativeMinutes(item.criado_em)}
-                            </small>
-                          </div>
-                          <div className="queue-actions">
-                            <span className={getFilaBadge(item.status, item.criado_em)}>
-                              {item.status}
-                            </span>
-                            <div className="queue-buttons">
-                              <button
-                                className="ghost"
-                                type="button"
-                                onClick={() =>
-                                  handleAtendimentoQuickAction(item.id, "Em andamento")
-                                }
-                              >
-                                Atender agora
-                              </button>
-                              <button
-                                className="ghost"
-                                type="button"
-                                onClick={() =>
-                                  handleAgendarFromAtendimento(
-                                    atendimentos.find((a) => a.id === item.id)?.cliente_id ??
-                                      null
-                                  )
-                                }
-                              >
-                                Agendar
-                              </button>
-                              <button
-                                className="ghost"
-                                type="button"
-                                onClick={() => handleAtendimentoQuickAction(item.id, "Concluído")}
-                              >
-                                Finalizar
-                              </button>
+                          Nenhum atendimento agora.
+                          <button
+                            type="button"
+                            className="ghost"
+                            onClick={() => setAtendimentoModalOpen(true)}
+                          >
+                            Abrir atendimento
+                          </button>
+                        </motion.div>
+                      ) : (
+                        filaAtendimento.map((item) => (
+                          <motion.div
+                            key={item.id}
+                            className="queue-item"
+                            layout
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <div>
+                              <strong>{item.cliente}</strong>
+                              <small>
+                                {item.canal} · {formatRelativeMinutes(item.criado_em)}
+                              </small>
                             </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                            <div className="queue-actions">
+                              <span className={getFilaBadge(item.status, item.criado_em)}>
+                                {item.status}
+                              </span>
+                              <div className="queue-buttons">
+                                <button
+                                  className="ghost"
+                                  type="button"
+                                  onClick={() =>
+                                    handleAtendimentoQuickAction(item.id, "Em andamento")
+                                  }
+                                >
+                                  Atender agora
+                                </button>
+                                <button
+                                  className="ghost"
+                                  type="button"
+                                  onClick={() =>
+                                    handleAgendarFromAtendimento(
+                                      atendimentos.find((a) => a.id === item.id)?.cliente_id ??
+                                        null
+                                    )
+                                  }
+                                >
+                                  Agendar
+                                </button>
+                                <button
+                                  className="ghost"
+                                  type="button"
+                                  onClick={() => handleAtendimentoQuickAction(item.id, "Concluído")}
+                                >
+                                  Finalizar
+                                </button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))
+                      )}
+                    </AnimatePresence>
                   </div>
                 </motion.div>
               </section>
@@ -2301,8 +2381,11 @@ export default function CentralApp() {
                   {filteredAtendimentos
                     .filter((item) => item.status === status)
                     .map((item) => (
-                      <div
+                      <motion.div
                         key={item.id}
+                        layout
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
                         className={`kanban-card clickable ${
                           draggingAtendimentoId === item.id ? "is-dragging" : ""
                         }`}
@@ -2314,7 +2397,7 @@ export default function CentralApp() {
                         <strong>{clientMap[item.cliente_id ?? ""] ?? "Sem cliente"}</strong>
                         <span>Canal: {item.canal ?? "Não informado"}</span>
                         <span>Resp: {item.responsavel ?? "Equipe"}</span>
-                      </div>
+                      </motion.div>
                     ))}
                 </div>
               ))}
