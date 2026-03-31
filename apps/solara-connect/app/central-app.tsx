@@ -398,6 +398,8 @@ export default function CentralApp() {
   >({});
   const [automationLoading, setAutomationLoading] = useState(false);
   const [automationSaving, setAutomationSaving] = useState(false);
+  const [draggingAtendimentoId, setDraggingAtendimentoId] = useState<string | null>(null);
+  const [dragOverStatus, setDragOverStatus] = useState<string | null>(null);
 
   const clientMap = useMemo(() => {
     return Object.fromEntries(clientes.map((client) => [client.id, client.nome]));
@@ -536,8 +538,22 @@ export default function CentralApp() {
   useEffect(() => {
     let mounted = true;
     async function loadTenants() {
-      const list = await fetchUserTenants();
+      let list = await fetchUserTenants();
       if (!mounted) return;
+
+      // Se nao houver nenhum tenant (clinica) vinculado ao usuario, tentamos vincular/criar um automaticamente.
+      if (list.length === 0) {
+        const accessToken = await getAccessToken();
+        if (accessToken) {
+          await fetch("/api/tenants/ensure", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          list = await fetchUserTenants();
+          if (!mounted) return;
+        }
+      }
+
       setTenants(list);
       const stored = typeof window !== "undefined" ? localStorage.getItem("solara.tenant") : null;
       const match = list.find((tenant) => tenant.id === stored);
@@ -1479,6 +1495,49 @@ export default function CentralApp() {
     }
   };
 
+  const handleOpenAtendimentoForClient = (clientId: string) => {
+    setNewAtendimento({
+      cliente_id: clientId,
+      status: "Novo",
+      canal: "WhatsApp",
+      responsavel: "Recepção",
+    });
+    setAtendimentoModalOpen(true);
+  };
+
+  const handleKanbanDragStart = (event: React.DragEvent<HTMLDivElement>, id: string) => {
+    event.dataTransfer.setData("text/plain", id);
+    event.dataTransfer.effectAllowed = "move";
+    setDraggingAtendimentoId(id);
+  };
+
+  const handleKanbanDragOver = (event: React.DragEvent<HTMLDivElement>, status: string) => {
+    event.preventDefault();
+    setDragOverStatus(status);
+  };
+
+  const handleKanbanDrop = async (event: React.DragEvent<HTMLDivElement>, status: string) => {
+    event.preventDefault();
+    const id = event.dataTransfer.getData("text/plain") || draggingAtendimentoId;
+    setDragOverStatus(null);
+    setDraggingAtendimentoId(null);
+    if (!id) return;
+
+    const current = atendimentos.find((item) => item.id === id);
+    if (!current || current.status === status) return;
+
+    setAtendimentos((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status } : item))
+    );
+
+    const updated = await updateAtendimentoStatus(id, status);
+    if (!updated) {
+      setSaveError("Falha ao mover atendimento. Tente novamente.");
+      const refreshed = await fetchDashboardData();
+      setAtendimentos(refreshed.atendimentos);
+    }
+  };
+
   const handleSaveAutomation = async () => {
     setSaveError(null);
     setAutomationSaving(true);
@@ -1701,6 +1760,24 @@ export default function CentralApp() {
 
   const atendimentoColumns = ["Novo", "Em andamento", "Aguardando", "Concluído"];
 
+  const atendimentoCounts = atendimentoColumns.reduce<Record<string, number>>((acc, status) => {
+    acc[status] = atendimentos.filter((item) => item.status === status).length;
+    return acc;
+  }, {});
+
+  const filaAtendimento = atendimentoColumns
+    .flatMap((status) =>
+      atendimentos
+        .filter((item) => item.status === status)
+        .map((item) => ({
+          id: item.id,
+          status,
+          cliente: clientMap[item.cliente_id ?? ""] ?? "Sem cliente",
+          canal: item.canal ?? "Canal não informado",
+        }))
+    )
+    .slice(0, 6);
+
   const totalReceber = cobrancas.reduce(
     (total, cobranca) => total + Number(cobranca.valor || 0),
     0
@@ -1820,7 +1897,7 @@ export default function CentralApp() {
             <div className="system-status">
               <span className={`status-dot ${billingStatus.color}`} />
               <div>
-                <strong>C.A-SOLARA</strong>
+                <strong>{currentTenant?.nome || "C.A-SOLARA"}</strong>
                 <span>{billingStatus.label}</span>
               </div>
             </div>
@@ -1836,65 +1913,99 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="kpis">
-                <motion.div className="kpi" whileHover={{ y: -2 }}>
-                  <span>Clientes ativos</span>
-                  <strong>{clientes.length}</strong>
-                </motion.div>
-                <motion.div className="kpi" whileHover={{ y: -2 }}>
-                  <span>Especialistas</span>
-                  <strong>{especialistas.length}</strong>
-                </motion.div>
-                <motion.div className="kpi" whileHover={{ y: -2 }}>
-                  <span>Agendamentos</span>
-                  <strong>{agendamentos.length}</strong>
-                </motion.div>
-                <motion.div className="kpi" whileHover={{ y: -2 }}>
-                  <span>Cobrança aberta</span>
-                <strong>{formatMoney(totalReceber, hideMoney)}</strong>
-                </motion.div>
+              <section className="dashboard-actions">
+                <div className="dashboard-actions-main">
+                  <button
+                    className="primary action-button"
+                    type="button"
+                    onClick={() => setAtendimentoModalOpen(true)}
+                  >
+                    + Novo atendimento
+                  </button>
+                  <button
+                    className="ghost action-button"
+                    type="button"
+                    onClick={() => setClientModalOpen(true)}
+                  >
+                    + Novo paciente
+                  </button>
+                  <button
+                    className="ghost action-button"
+                    type="button"
+                    onClick={() => setAgendaModalOpen(true)}
+                  >
+                    Agendar consulta
+                  </button>
+                </div>
+                <div className="dashboard-actions-status">
+                  <div className="status-chip">
+                    <span className="status-dot status-dot--green" />
+                    <div>
+                      <strong>Sistema online</strong>
+                      <small>Atendimentos hoje: {atendimentos.length}</small>
+                    </div>
+                  </div>
+                  <div className="status-chip">
+                    <div>
+                      <strong>Tempo médio de espera</strong>
+                      <small>-- min</small>
+                    </div>
+                  </div>
+                </div>
               </section>
 
               <section className="grid-two">
                 <motion.div className="panel" whileHover={{ y: -2 }}>
                   <div className="panel-header">
                     <h2>Fluxo de atendimento</h2>
-                    <span className="chip">Hoje</span>
+                    <span className="chip">Operação</span>
                   </div>
-                  <div className="chart">
-                    {atendimentoColumns.map((status) => {
-                      const total = atendimentos.filter((item) => item.status === status).length;
-                      return (
-                        <div key={status} className="chart-row">
-                          <span>{status}</span>
-                          <div className="bar">
-                            <span style={{ width: `${Math.min(total * 18, 100)}%` }} />
-                          </div>
-                          <strong>{total}</strong>
-                        </div>
-                      );
-                    })}
+                  <div className="flow-cards">
+                    {atendimentoColumns.map((status) => (
+                      <button
+                        key={status}
+                        className="flow-card"
+                        type="button"
+                        onClick={() => {
+                          setKanbanFilter(status);
+                          setActiveSection("kanban");
+                        }}
+                      >
+                        <strong>{status}</strong>
+                        <span>{atendimentoCounts[status] ?? 0}</span>
+                        <small>Clique para abrir</small>
+                      </button>
+                    ))}
                   </div>
                 </motion.div>
                 <motion.div className="panel" whileHover={{ y: -2 }}>
                   <div className="panel-header">
-                    <h2>Cobrança por status</h2>
-                    <span className="chip">Últimos 7 dias</span>
+                    <h2>Fila de atendimento</h2>
+                    <span className="chip">Tempo real</span>
                   </div>
-                  <div className="chart">
-                    {["Pendente", "Pago", "Atrasado", "Cancelado"].map((status) => {
-                      const total = cobrancas.filter((item) => item.status === status).length;
-                      const statusKey = status.toLowerCase();
-                      return (
-                        <div key={status} className={`chart-row status-${statusKey}`}>
-                          <span>{status}</span>
-                          <div className="bar">
-                            <span style={{ width: `${Math.min(total * 22, 100)}%` }} />
+                  <div className="queue-list">
+                    {filaAtendimento.length === 0 ? (
+                      <div className="queue-empty">
+                        Nenhum atendimento agora.
+                        <button
+                          type="button"
+                          className="ghost"
+                          onClick={() => setAtendimentoModalOpen(true)}
+                        >
+                          Abrir atendimento
+                        </button>
+                      </div>
+                    ) : (
+                      filaAtendimento.map((item) => (
+                        <div key={item.id} className="queue-item">
+                          <div>
+                            <strong>{item.cliente}</strong>
+                            <small>{item.canal}</small>
                           </div>
-                          <strong>{total}</strong>
+                          <span className="queue-status">{item.status}</span>
                         </div>
-                      );
-                    })}
+                      ))
+                    )}
                   </div>
                 </motion.div>
               </section>
@@ -1908,11 +2019,21 @@ export default function CentralApp() {
                   <div className="data-kanban" style={{ gridTemplateColumns: "1fr" }}>
                     <div className="data-col">
                       {upcomingAppointments.length === 0 && (
-                        <div className="data-card">Nenhum agendamento encontrado.</div>
+                        <div className="data-card data-card--empty">
+                          <strong>Nenhum agendamento hoje</strong>
+                          <p>Organize o dia com um novo horário.</p>
+                          <button
+                            className="primary"
+                            type="button"
+                            onClick={() => setAgendaModalOpen(true)}
+                          >
+                            Agendar consulta
+                          </button>
+                        </div>
                       )}
                       {upcomingAppointments.map((appointment) => (
                         <div key={appointment.id} className="data-card">
-                        <strong>{clientMap[appointment.cliente_id] ?? "Não informado"}</strong>
+                          <strong>{clientMap[appointment.cliente_id] ?? "Não informado"}</strong>
                           <p>
                             {formatDate(appointment.data_hora)} ·{" "}
                             {formatTime(appointment.data_hora)}
@@ -1940,6 +2061,13 @@ export default function CentralApp() {
                           <strong>{client.nome}</strong>
                           <p>{client.telefone || "Sem telefone"}</p>
                           <span>Status: {client.status}</span>
+                          <button
+                            className="ghost"
+                            type="button"
+                            onClick={() => handleOpenAtendimentoForClient(client.id)}
+                          >
+                            Abrir atendimento
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -2064,15 +2192,28 @@ export default function CentralApp() {
 
             <div className="kanban">
               {atendimentoColumns.map((status) => (
-                <div key={status} className="kanban-col">
+                <div
+                  key={status}
+                  className={`kanban-col ${
+                    dragOverStatus === status ? "kanban-col--active" : ""
+                  }`}
+                  onDragOver={(event) => handleKanbanDragOver(event, status)}
+                  onDragLeave={() => setDragOverStatus(null)}
+                  onDrop={(event) => handleKanbanDrop(event, status)}
+                >
                   <h3>{status}</h3>
                   {filteredAtendimentos
                     .filter((item) => item.status === status)
                     .map((item) => (
                       <div
                         key={item.id}
-                        className="kanban-card clickable"
+                        className={`kanban-card clickable ${
+                          draggingAtendimentoId === item.id ? "is-dragging" : ""
+                        }`}
                         onClick={() => setEditingAtendimento(item)}
+                        draggable
+                        onDragStart={(event) => handleKanbanDragStart(event, item.id)}
+                        onDragEnd={() => setDraggingAtendimentoId(null)}
                       >
                         <strong>{clientMap[item.cliente_id ?? ""] ?? "Sem cliente"}</strong>
                         <span>Canal: {item.canal ?? "Não informado"}</span>

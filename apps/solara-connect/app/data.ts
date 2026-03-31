@@ -149,8 +149,7 @@ type TenantUserRow = {
 export type TenantRow = {
   id: string;
   nome: string;
-  nome_real?: string | null;
-  cnpj?: string | null;
+  telefone?: string | null;
   slug?: string | null;
   ativo?: boolean | null;
   billing_status?: string | null;
@@ -179,20 +178,32 @@ async function getActiveTenantId(client: SupabaseClient | null) {
 export async function fetchUserTenants() {
   const client = getSupabaseClient();
   if (!client) return [];
-  const { data, error } = await client
+
+  // Primeiro busca os IDs dos tenants vinculados ao usuario atual
+  const { data: userLinks, error: linkError } = await client
     .from("tenant_users")
-    .select(
-      "tenant_id, tenants(id, nome, nome_real, cnpj, slug, ativo, billing_status, criado_em)"
-    )
+    .select("tenant_id")
     .limit(50);
-  if (error || !data) return [];
-  return data
-    .map((row) => {
-      const tenants = (row as { tenants?: TenantRow | TenantRow[] | null }).tenants;
-      if (!tenants) return null;
-      return Array.isArray(tenants) ? tenants[0] ?? null : tenants;
-    })
-    .filter((item): item is TenantRow => Boolean(item));
+
+  if (linkError || !userLinks || userLinks.length === 0) {
+    console.error("fetchUserTenants: Erro ao buscar links ou nenhum link encontrado", linkError);
+    return [];
+  }
+
+  const tenantIds = userLinks.map((l) => l.tenant_id).filter(Boolean);
+
+  // Depois busca os dados desses tenants
+  const { data: list, error: tenantError } = await client
+    .from("tenants")
+    .select("id, nome, telefone, slug, ativo, billing_status, criado_em")
+    .in("id", tenantIds);
+
+  if (tenantError || !list) {
+    console.error("fetchUserTenants: Erro ao buscar dados dos tenants", tenantError);
+    return [];
+  }
+
+  return list as TenantRow[];
 }
 
 async function safeQuery<T>(
@@ -421,15 +432,21 @@ export async function createAppointment(input: {
   status: string;
 }) {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) {
+    throw new Error("Supabase nao configurado no frontend.");
+  }
   const tenant_id = await getActiveTenantId(client);
-  if (!tenant_id) return null;
+  if (!tenant_id) {
+    throw new Error("Usuario sem vinculo de clinica (tenant). Faca login novamente.");
+  }
   const { data, error } = await client
     .from("agendamentos")
     .insert({ ...input, tenant_id })
     .select("id, cliente_id, especialista_id, data_hora, status")
     .single();
-  if (error) return null;
+  if (error) {
+    throw new Error(error.message);
+  }
   return data as AppointmentRow;
 }
 
@@ -457,9 +474,13 @@ export async function createPayment(input: {
   status: string;
 }) {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) {
+    throw new Error("Supabase nao configurado no frontend.");
+  }
   const tenant_id = await getActiveTenantId(client);
-  if (!tenant_id) return null;
+  if (!tenant_id) {
+    throw new Error("Usuario sem vinculo de clinica (tenant). Faca login novamente.");
+  }
   const { data, error } = await client
     .from("cobrancas")
     .insert({ ...input, tenant_id })
@@ -467,7 +488,9 @@ export async function createPayment(input: {
       "id, cliente_id, valor, status, pagbank_order_id, pagbank_reference_id, pagbank_qr_code_text, pagbank_qr_code_image_url, pagbank_status, pagbank_charge_id, pagbank_payload, pagbank_updated_at, pagbank_expires_at, pagbank_fee, pagbank_net_amount"
     )
     .single();
-  if (error) return null;
+  if (error) {
+    throw new Error(error.message);
+  }
   return data as PaymentRow;
 }
 
@@ -524,9 +547,13 @@ export async function createAtendimento(input: {
   responsavel?: string | null;
 }) {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) {
+    throw new Error("Supabase nao configurado no frontend.");
+  }
   const tenant_id = await getActiveTenantId(client);
-  if (!tenant_id) return null;
+  if (!tenant_id) {
+    throw new Error("Usuario sem vinculo de clinica (tenant). Faca login novamente.");
+  }
   const { data, error } = await client
     .from("atendimentos")
     .insert({
@@ -538,7 +565,9 @@ export async function createAtendimento(input: {
     })
     .select("id, cliente_id, status, canal, responsavel")
     .single();
-  if (error) return null;
+  if (error) {
+    throw new Error(error.message);
+  }
   return data as AtendimentoRow;
 }
 
@@ -575,9 +604,13 @@ export async function createEvolutionConnection(input: {
   ativo?: boolean;
 }) {
   const client = getSupabaseClient();
-  if (!client) return null;
+  if (!client) {
+    throw new Error("Supabase nao configurado no frontend.");
+  }
   const tenant_id = await getActiveTenantId(client);
-  if (!tenant_id) return null;
+  if (!tenant_id) {
+    throw new Error("Usuario sem vinculo de clinica (tenant). Faca login novamente.");
+  }
   const { data: existing } = await client
     .from("evolution_conexoes")
     .select("id")
@@ -585,7 +618,9 @@ export async function createEvolutionConnection(input: {
     .or(`telefone.eq.${input.telefone},instance_id.eq.${input.instance_id}`)
     .limit(1)
     .maybeSingle();
-  if (existing?.id) return null;
+  if (existing?.id) {
+    throw new Error("Ja existe uma conexao com esse telefone ou instance.");
+  }
   const { data, error } = await client
     .from("evolution_conexoes")
     .insert({
@@ -598,7 +633,9 @@ export async function createEvolutionConnection(input: {
     })
     .select("id, nome, telefone, instance_id, api_url, ativo, criado_em")
     .single();
-  if (error) return null;
+  if (error) {
+    throw new Error(error.message);
+  }
   return data as EvolutionConnectionRow;
 }
 
@@ -626,7 +663,7 @@ export async function updateEvolutionConnection(
 
 export async function updateTenant(
   id: string,
-  input: { nome: string; nome_real?: string; cnpj?: string }
+  input: { nome: string; telefone?: string }
 ) {
   const client = getSupabaseClient();
   if (!client) return null;
@@ -634,11 +671,10 @@ export async function updateTenant(
     .from("tenants")
     .update({
       nome: input.nome,
-      nome_real: input.nome_real ?? undefined,
-      cnpj: input.cnpj ?? undefined,
+      telefone: input.telefone ?? undefined,
     })
     .eq("id", id)
-    .select("id, nome, nome_real, cnpj, slug, ativo, criado_em")
+    .select("id, nome, telefone, slug, ativo, criado_em")
     .single();
   if (error) return null;
   return data as TenantRow;

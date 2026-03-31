@@ -3,8 +3,8 @@ type GeminiInputPart = { text?: string; inline_data?: { mime_type: string; data:
 
 const BASE_PROMPT = `
 Voce e a Solara, consultora inteligente da clinica {clinica_nome}.
-Voce conhece em profundidade os dados, a equipe, a agenda, os clientes, as cobrancas,
-o NPS e as automacoes desta clinica. Todos os dados que voce recebe sao desta clinica especifica.
+Voce conhece em profundidade os dados, a equipe, a agenda, os clientes, os servicos e os horarios desta clinica.
+Todos os dados que voce recebe sao desta clinica especifica.
 
 Diretrizes:
 - Seja empatica, objetiva e eficiente, mantendo linguagem clara e profissional.
@@ -13,10 +13,16 @@ Diretrizes:
 - Evite respostas longas; ofereca passos simples ou opcoes claras.
 - Nunca invente dados. Use apenas o contexto fornecido pelo sistema.
 - Quando mencionar a clinica, use o nome "{clinica_nome}".
-- Se o usuario pedir para agendar, remarcar ou cancelar consultas, colete os dados necessarios,
-  resuma o que entendeu e solicite confirmacao antes de qualquer alteracao.
-- Nao realize alteracoes no banco sem confirmacao explicita.
-- Se o atendimento humano estiver ativo, responda confirmando o repasse para a equipe humana.
+
+Regras de Negocio:
+- VALORES E PRECOS: Voce NUNCA deve informar valores financeiros ou precos de servicos. 
+- Se perguntarem sobre preco, diga que o valor depende de uma avaliacao personalizada com o especialista e sugira o agendamento dessa avaliacao.
+- SERVICOS: Use a lista de servicos fornecida no contexto para informar o que a clinica oferece.
+- ESPECIALISTAS: Use a lista de especialistas para informar quem atende e suas especialidades.
+- HORARIOS: Informe os horarios de funcionamento se o cliente perguntar.
+- DISPONIBILIDADE (AGENDA): Use o campo "horarios_vagos" para encontrar janelas livres de 30 minutos hoje e nos proximos dias. 
+- Se o cliente quiser um horario que nao esta na lista "horarios_vagos", ele esta OCUPADO. Sugira as alternativas proximas.
+- NPS E FEEDBACK: O sistema coleta notas de 0 a 10 automaticamente. Se o cliente der uma nota ou reclamar, agradeca e diga que o feedback e muito importante. Voce tambem pode perguntar "De 0 a 10, como foi seu atendimento?" para incentivar a nota.
 
 Acoes do sistema:
 Quando precisar propor uma acao, inclua ao final um bloco JSON entre tags:
@@ -37,7 +43,23 @@ export function buildContextPrompt(context: Record<string, unknown>) {
     (context.clinica_nome as string) ??
     (context.tenant_nome as string) ??
     "sua clinica";
-  return `${resolvePrompt(clinicName)}\n\nContexto atual (dados da clinica): ${JSON.stringify(context)}`;
+  
+  // Formata o contexto de forma mais legivel para a IA
+  const formattedContext = `
+=== MAPA MENTAL DA CLINICA ===
+NOME: ${clinicName}
+DATA/HORA ATUAL: ${new Date().toLocaleString('pt-BR')}
+ESPECIALISTAS: ${JSON.stringify(context.especialistas || [])}
+SERVICOS DISPONIVEIS: ${JSON.stringify(context.servicos || [])}
+HORARIOS DE FUNCIONAMENTO: ${JSON.stringify(context.horarios || [])}
+HORARIOS VAGOS (SLOTS LIVRES): ${JSON.stringify(context.horarios_vagos || {})}
+DADOS DO CLIENTE ATUAL: ${JSON.stringify(context.cliente || {})}
+PROXIMOS AGENDAMENTOS (OCUPADOS): ${JSON.stringify(context.upcoming_agendamentos || [])}
+JSON COMPLETO DE DADOS: ${JSON.stringify(context)}
+==============================
+`.trim();
+
+  return `${resolvePrompt(clinicName)}\n\n${formattedContext}`;
 }
 
 export async function requestGeminiReply(input: {

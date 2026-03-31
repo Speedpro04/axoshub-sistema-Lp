@@ -798,7 +798,14 @@ export async function POST(request: Request) {
           .order("criado_em", { ascending: true })
           .limit(12);
 
-        const [clientesCount, especialistasCount, agendamentosCount] = await Promise.all([
+        const [
+          clientesCount,
+          especialistasCount,
+          agendamentosCount,
+          servicosRows,
+          horariosRows,
+          todosEspecialistasRows,
+        ] = await Promise.all([
           supabase
             .from("clientes")
             .select("id", { count: "exact", head: true })
@@ -811,6 +818,20 @@ export async function POST(request: Request) {
             .from("agendamentos")
             .select("id", { count: "exact", head: true })
             .eq("tenant_id", tenant_id),
+          supabase
+            .from("servicos")
+            .select("nome, duracao_minutos, descricao, categoria")
+            .eq("tenant_id", tenant_id)
+            .eq("ativo", true),
+          supabase
+            .from("horarios_funcionamento")
+            .select("dia_semana, abertura, fechamento")
+            .eq("tenant_id", tenant_id),
+          supabase
+            .from("especialistas")
+            .select("nome, especialidade")
+            .eq("tenant_id", tenant_id)
+            .eq("ativo", true),
         ]);
 
         const { data: upcoming } = await supabase
@@ -818,8 +839,46 @@ export async function POST(request: Request) {
           .select("id, data_hora, status, cliente_id, especialista_id")
           .eq("tenant_id", tenant_id)
           .gte("data_hora", new Date().toISOString())
-          .order("data_hora", { ascending: true })
-          .limit(5);
+          .lte("data_hora", new Date(Date.now() + 172800000).toISOString()) // Proximos 2 dias
+          .order("data_hora", { ascending: true });
+
+        // LOGICA DE CALCULO DE HORARIOS VAGOS (30/30)
+        const freeSlots: Record<string, string[]> = {};
+        if (horariosRows.data && horariosRows.data.length > 0) {
+          const now = new Date();
+          for (let i = 0; i < 3; i++) { // Hoje, Amanha, Depois
+            const day = new Date(now.getTime() + i * 86400000);
+            const dayOfWeek = day.getDay();
+            const config = (horariosRows.data ?? []).find(h => h.dia_semana === dayOfWeek);
+            
+            if (config) {
+              const dayStr = day.toISOString().split('T')[0];
+              freeSlots[dayStr] = [];
+              
+              const [hOpen, mOpen] = config.abertura.split(':').map(Number);
+              const [hClose, mClose] = config.fechamento.split(':').map(Number);
+              
+              let current = new Date(day);
+              current.setHours(hOpen, mOpen, 0, 0);
+              const end = new Date(day);
+              end.setHours(hClose, mClose, 0, 0);
+              
+              while (current < end) {
+                const slotTime = current.toISOString();
+                const isOccupied = (upcoming ?? []).some(a => 
+                  new Date(a.data_hora).getTime() === current.getTime() && 
+                  a.status !== 'Cancelado'
+                );
+                
+                // Nao sugerir horarios que ja passaram hoje
+                if (!isOccupied && current > now) {
+                  freeSlots[dayStr].push(current.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                }
+                current.setMinutes(current.getMinutes() + 30);
+              }
+            }
+          }
+        }
 
         const clientIds = new Set(
           (upcoming ?? []).map((item) => item.cliente_id).filter(Boolean)
@@ -862,6 +921,10 @@ export async function POST(request: Request) {
             telefone: senderPhone,
             nome: clientName ?? messageInfo.pushName ?? null,
           },
+          servicos: servicosRows.data ?? [],
+          horarios: horariosRows.data ?? [],
+          horarios_vagos: freeSlots,
+          especialistas: todosEspecialistasRows.data ?? [],
           counts: {
             clientes: clientesCount.count ?? 0,
             especialistas: especialistasCount.count ?? 0,
