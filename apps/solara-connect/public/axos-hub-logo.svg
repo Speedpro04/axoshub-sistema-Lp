@@ -1,0 +1,16 @@
+<svg width="560" height="170" viewBox="0 0 560 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
+    </style>
+  </defs>
+  <rect width="560" height="170" rx="26" fill="#000D3D" />
+  <g transform="translate(34 32)">
+    <circle cx="52" cy="52" r="44" stroke="#81ECEC" stroke-width="7" />
+    <path d="M24 24L80 80" stroke="#81ECEC" stroke-width="12" stroke-linecap="round" />
+    <path d="M80 24L24 80" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+  </g>
+  <text x="130" y="112" font-family="Bebas Neue, sans-serif" font-size="66" fill="#FFFFFF" letter-spacing="6">
+    AXOS HUB
+  </text>
+</svg>

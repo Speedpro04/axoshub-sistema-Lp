@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solara-data-platform"
+version = "0.1.0"
+description = "Camada de analytics e transformacao de dados para a plataforma Solara."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "polars>=1.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

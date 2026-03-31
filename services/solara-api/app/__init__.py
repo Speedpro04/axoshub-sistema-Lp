@@ -1,0 +1,2 @@
+"""Solara FastAPI app package."""
+

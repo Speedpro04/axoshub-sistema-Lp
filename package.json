@@ -1,0 +1,18 @@
+{
+  "name": "solara-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:mei": "npm run dev --workspace apps/solara-mei",
+    "dev:connect": "npm run dev --workspace apps/solara-connect",
+    "build": "npm run build --workspace apps/solara-mei && npm run build --workspace apps/solara-connect",
+    "lint": "npm run lint --workspace apps/solara-mei && npm run lint --workspace apps/solara-connect"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
