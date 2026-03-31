@@ -564,30 +564,36 @@ body {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #000d3d;
-  background: rgba(129, 236, 236, 0.35);
+  color: #0b0f2a;
+  background: rgba(125, 211, 252, 0.5);
   padding: 4px 10px;
   border-radius: 999px;
+  border: 1px solid rgba(11, 15, 42, 0.08);
 }
 
 .fila-badge--red {
-  background: rgba(255, 118, 117, 0.35);
+  background: rgba(255, 99, 71, 0.45);
+  border-color: rgba(255, 99, 71, 0.35);
 }
 
 .fila-badge--yellow {
-  background: rgba(253, 203, 110, 0.35);
+  background: rgba(253, 203, 110, 0.55);
+  border-color: rgba(253, 203, 110, 0.35);
 }
 
 .fila-badge--green {
-  background: rgba(85, 239, 196, 0.35);
+  background: rgba(85, 239, 196, 0.55);
+  border-color: rgba(85, 239, 196, 0.35);
 }
 
 .fila-badge--blue {
-  background: rgba(116, 185, 255, 0.35);
+  background: rgba(116, 185, 255, 0.55);
+  border-color: rgba(116, 185, 255, 0.35);
 }
 
 .fila-badge--dark {
-  background: rgba(178, 190, 195, 0.4);
+  background: rgba(178, 190, 195, 0.55);
+  border-color: rgba(178, 190, 195, 0.35);
 }
 
 .queue-item small {
@@ -612,7 +618,7 @@ body {
 
 .floating-action {
   position: fixed;
-  right: 28px;
+  left: 28px;
   bottom: 32px;
   z-index: 40;
   padding: 14px 20px;

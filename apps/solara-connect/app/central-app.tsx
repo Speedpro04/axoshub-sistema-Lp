@@ -2234,16 +2234,6 @@ export default function CentralApp() {
               </section>
             </motion.div>
           )}
-          {activeSection === "dashboard" && (
-            <button
-              className="floating-action"
-              type="button"
-              onClick={() => setAtendimentoModalOpen(true)}
-              aria-label="Novo atendimento"
-            >
-              + Novo atendimento
-            </button>
-          )}
 
           {activeSection === "kanban" && (
             <motion.div
