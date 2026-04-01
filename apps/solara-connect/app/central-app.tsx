@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   AppointmentRow,
   AtendimentoRow,
@@ -99,7 +99,7 @@ function formatTime(value: string) {
 }
 
 function formatMoney(value: number, hidden: boolean) {
-  if (hidden) return "R$ ••••";
+  if (hidden) return "R$ â€¢â€¢â€¢â€¢";
   return `R$ ${value.toFixed(2)}`;
 }
 
@@ -152,7 +152,7 @@ function extractWhatsAppEventText(evento: EvolutionEventRow) {
   }
 
   if (evento.media_type === "image") return "[Imagem recebida]";
-  if (evento.media_type === "audio") return "[Áudio recebido]";
+  if (evento.media_type === "audio") return "[Ãudio recebido]";
   if (evento.media_type) return `[Anexo ${evento.media_type}]`;
   return evento.event ?? "Evento de WhatsApp";
 }
@@ -187,7 +187,7 @@ function extractEventClientLabel(evento: EvolutionEventRow) {
     firstText(record?.pushName) ??
     firstText(record?.pushname) ??
     firstText(record?.senderName);
-  if (pushName && phone) return `${pushName} • ${phone}`;
+  if (pushName && phone) return `${pushName} â€¢ ${phone}`;
   if (pushName) return pushName;
   if (phone) return phone;
   return "Cliente";
@@ -301,7 +301,7 @@ export default function CentralApp() {
   const [solaraStatus, setSolaraStatus] = useState<SolaraStatusRow | null>(null);
 
   // --- Framer Motion Variants ---
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -312,12 +312,12 @@ export default function CentralApp() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.4, ease: "easeOut" },
+      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] },
     },
   };
 
@@ -541,7 +541,7 @@ export default function CentralApp() {
     "Agendado",
     "Confirmado",
     "Em atendimento",
-    "Concluído",
+    "ConcluÃ­do",
     "Cancelado",
   ];
 
@@ -550,7 +550,7 @@ export default function CentralApp() {
       Agendado: "#74b9ff",
       Confirmado: "#81ecec",
       "Em atendimento": "#ffeaa7",
-      "Concluído": "#55efc4",
+      "ConcluÃ­do": "#55efc4",
       Cancelado: "#ff7675",
     }),
     []
@@ -788,10 +788,10 @@ export default function CentralApp() {
     let mounted = true;
 
     async function bootstrapWhatsappConnection() {
-      setSendStatus("Preparando conexão automática da clínica...");
+      setSendStatus("Preparando conexÃ£o automÃ¡tica da clÃ­nica...");
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        if (mounted) setSendStatus("Sessão inválida. Faça login novamente.");
+        if (mounted) setSendStatus("SessÃ£o invÃ¡lida. FaÃ§a login novamente.");
         return;
       }
 
@@ -803,7 +803,7 @@ export default function CentralApp() {
       if (!response.ok) {
         const message = await extractApiError(
           response,
-          "Falha ao preparar conexão da clínica."
+          "Falha ao preparar conexÃ£o da clÃ­nica."
         );
         if (mounted) setSendStatus(message);
         return;
@@ -818,12 +818,12 @@ export default function CentralApp() {
         setSelectedConexaoId((prev) => prev ?? nextConexoes[0].id);
         setSendStatus(null);
       } else {
-        setSendStatus("Conexão não encontrada. Abra Configurar clínica.");
+        setSendStatus("ConexÃ£o nÃ£o encontrada. Abra Configurar clÃ­nica.");
       }
     }
 
     bootstrapWhatsappConnection().catch(() => {
-      if (mounted) setSendStatus("Falha ao preparar conexão da clínica.");
+      if (mounted) setSendStatus("Falha ao preparar conexÃ£o da clÃ­nica.");
     });
 
     return () => {
@@ -937,7 +937,7 @@ export default function CentralApp() {
       });
       return;
     }
-    const baseName = selectedWhatsAppConversation.label.split(" • ")[0]?.trim() ?? "";
+    const baseName = selectedWhatsAppConversation.label.split(" â€¢ ")[0]?.trim() ?? "";
     const nextName = baseName === "Cliente" ? "" : baseName;
     setSendClientName(nextName);
     if (selectedWhatsAppConversation.phone) {
@@ -1138,7 +1138,7 @@ export default function CentralApp() {
       status: newPayment.status,
     });
     if (!created) {
-      setSaveError("Falha ao salvar cobrança no Supabase.");
+      setSaveError("Falha ao salvar cobranÃ§a no Supabase.");
       return;
     }
     let nextPayment = created;
@@ -1177,11 +1177,11 @@ export default function CentralApp() {
         }
       } else {
         setSaveError(
-          "Cobrança salva, mas não foi possível gerar o PIX no PagBank."
+          "CobranÃ§a salva, mas nÃ£o foi possÃ­vel gerar o PIX no PagBank."
         );
       }
     } catch {
-      setSaveError("Cobrança salva, mas houve erro ao contactar o PagBank.");
+      setSaveError("CobranÃ§a salva, mas houve erro ao contactar o PagBank.");
     }
     setCobrancas((prev) => [nextPayment, ...prev]);
     setPaymentModalOpen(false);
@@ -1224,7 +1224,7 @@ export default function CentralApp() {
           item.instance_id === newConexao.instance_id
       )
     ) {
-      setSaveError("Já existe uma conexão com esse telefone ou instance.");
+      setSaveError("JÃ¡ existe uma conexÃ£o com esse telefone ou instance.");
       return;
     }
     const created = await createEvolutionConnection({
@@ -1234,7 +1234,7 @@ export default function CentralApp() {
       api_url: newConexao.api_url,
     });
     if (!created) {
-      setSaveError("Falha ao salvar conexão da Evolution API.");
+      setSaveError("Falha ao salvar conexÃ£o da Evolution API.");
       return;
     }
     setConexoes((prev) => [created, ...prev]);
@@ -1534,7 +1534,7 @@ export default function CentralApp() {
       cliente_id: clientId,
       status: "Novo",
       canal: "WhatsApp",
-      responsavel: "Recepção",
+      responsavel: "RecepÃ§Ã£o",
     });
     setAtendimentoModalOpen(true);
   };
@@ -1562,16 +1562,16 @@ export default function CentralApp() {
   };
 
   const formatRelativeMinutes = (value?: string | null) => {
-    if (!value) return "há alguns minutos";
+    if (!value) return "hÃ¡ alguns minutos";
     const diffMs = Date.now() - new Date(value).getTime();
-    if (Number.isNaN(diffMs)) return "há alguns minutos";
+    if (Number.isNaN(diffMs)) return "hÃ¡ alguns minutos";
     const minutes = Math.max(1, Math.round(diffMs / 60000));
-    return `há ${minutes} min`;
+    return `hÃ¡ ${minutes} min`;
   };
 
   const getFilaBadge = (status: string, criadoEm?: string | null) => {
     if (status === "Em andamento") return "fila-badge fila-badge--green";
-    if (status === "Concluído") return "fila-badge fila-badge--dark";
+    if (status === "ConcluÃ­do") return "fila-badge fila-badge--dark";
     if (status === "Novo") return "fila-badge fila-badge--blue";
     if (status === "Aguardando") {
       const minutes = criadoEm
@@ -1659,7 +1659,7 @@ export default function CentralApp() {
       } else {
         const result = await response.json();
         setReconcileStatus(
-          `Conciliação concluída. Atualizadas: ${result.updated ?? 0}.`
+          `ConciliaÃ§Ã£o concluÃ­da. Atualizadas: ${result.updated ?? 0}.`
         );
         const refreshed = await fetchDashboardData();
         setCobrancas(refreshed.cobrancas);
@@ -1688,7 +1688,7 @@ export default function CentralApp() {
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        setPrivacyStatus(payload?.error ?? "Falha na operação LGPD.");
+        setPrivacyStatus(payload?.error ?? "Falha na operaÃ§Ã£o LGPD.");
       } else {
         if (endpoint.endsWith("/export")) {
           const payload = await response.json();
@@ -1701,17 +1701,17 @@ export default function CentralApp() {
           link.download = `lgpd-export-${privacyClientId}.json`;
           link.click();
           URL.revokeObjectURL(url);
-          setPrivacyStatus("Exportação gerada com sucesso.");
+          setPrivacyStatus("ExportaÃ§Ã£o gerada com sucesso.");
         } else {
           const payload = await response.json().catch(() => null);
-          setPrivacyStatus(payload?.message ?? "Operação concluída.");
+          setPrivacyStatus(payload?.message ?? "OperaÃ§Ã£o concluÃ­da.");
         }
         const refreshed = await fetchDashboardData();
         setClientes(refreshed.clientes);
         setCobrancas(refreshed.cobrancas);
       }
     } catch {
-      setPrivacyStatus("Falha na operação LGPD.");
+      setPrivacyStatus("Falha na operaÃ§Ã£o LGPD.");
     } finally {
       setPrivacyLoading(false);
     }
@@ -1765,7 +1765,7 @@ export default function CentralApp() {
       status: editingPayment.status,
     });
     if (!updated) {
-      setSaveError("Falha ao atualizar cobrança no Supabase.");
+      setSaveError("Falha ao atualizar cobranÃ§a no Supabase.");
       return;
     }
     setCobrancas((prev) =>
@@ -1824,7 +1824,7 @@ export default function CentralApp() {
   };
 
   const sectionMeta: Array<{ key: SectionKey; label: string }> = [
-    { key: "dashboard", label: "Visão geral" },
+    { key: "dashboard", label: "VisÃ£o geral" },
     { key: "kanban", label: "Central Kanban" },
     { key: "clientes", label: "Clientes" },
     { key: "especialistas", label: "Especialistas" },
@@ -1833,10 +1833,10 @@ export default function CentralApp() {
     { key: "nps", label: "NPS" },
     { key: "automacoes", label: "Automacoes" },
     { key: "privacidade", label: "Privacidade" },
-    { key: "cobrancas", label: "Cobranças" },
+    { key: "cobrancas", label: "CobranÃ§as" },
   ] as const;
 
-  const atendimentoColumns = ["Novo", "Em andamento", "Aguardando", "Concluído"];
+  const atendimentoColumns = ["Novo", "Em andamento", "Aguardando", "ConcluÃ­do"];
 
   const atendimentoCounts = atendimentoColumns.reduce<Record<string, number>>((acc, status) => {
     acc[status] = atendimentos.filter((item) => item.status === status).length;
@@ -1851,7 +1851,7 @@ export default function CentralApp() {
           id: item.id,
           status,
           cliente: clientMap[item.cliente_id ?? ""] ?? "Sem cliente",
-          canal: item.canal ?? "Canal não informado",
+          canal: item.canal ?? "Canal nÃ£o informado",
           criado_em: item.criado_em ?? null,
         }))
     )
@@ -1879,7 +1879,7 @@ export default function CentralApp() {
           <img src="/axos-hub-logo.png" alt="Axos Hub" />
         </div>
         <div className="sidebar-title">
-          MÓDULO DE RECEPÇÃO DIGITAL
+          MÃ“DULO DE RECEPÃ‡ÃƒO DIGITAL
           <span className="sidebar-subtitle">SOLARA CONNECT</span>
         </div>
         <nav className="nav">
@@ -1906,9 +1906,9 @@ export default function CentralApp() {
       <main className="main">
         <header className="topbar">
           <div>
-            <h1>Módulo de Recepção Digital</h1>
+            <h1>MÃ³dulo de RecepÃ§Ã£o Digital</h1>
             <p>
-              Clínicas médicas, odontológicas, de emagrecimento e estéticas conectadas
+              ClÃ­nicas mÃ©dicas, odontolÃ³gicas, de emagrecimento e estÃ©ticas conectadas
               em tempo real.
             </p>
             {!hasSupabaseEnv() && (
@@ -1959,7 +1959,7 @@ export default function CentralApp() {
                 />
               </div>
               <span>
-                {solaraStatus?.status === "human" ? "Solicitação humana" : "Solara atendendo"}
+                {solaraStatus?.status === "human" ? "SolicitaÃ§Ã£o humana" : "Solara atendendo"}
               </span>
               {newEventsCount > 0 && <span className="event-badge">{newEventsCount}</span>}
             </div>
@@ -2028,19 +2028,19 @@ export default function CentralApp() {
                     />
                   </div>
                   <div>
-                    <strong>{loading ? "Conexão instável" : "Sistema online"}</strong>
+                    <strong>{loading ? "ConexÃ£o instÃ¡vel" : "Sistema online"}</strong>
                     <small>Atendimentos hoje: {atendimentos.length}</small>
                   </div>
                 </div>
                 <div className="status-chip">
                   <div>
-                    <strong>Tempo médio de espera</strong>
+                    <strong>Tempo mÃ©dio de espera</strong>
                     <small>-- min</small>
                   </div>
                 </div>
                 <div className="status-chip">
                   <div>
-                    <strong>Última atualização</strong>
+                    <strong>Ãšltima atualizaÃ§Ã£o</strong>
                     <small>
                       {lastDashboardUpdate
                         ? formatTime(lastDashboardUpdate.toISOString())
@@ -2048,7 +2048,7 @@ export default function CentralApp() {
                     </small>
                   </div>
                 </div>
-              </section>
+              </motion.section>
 
               <motion.section className="dashboard-actions" variants={itemVariants}>
                 <div className="dashboard-actions-main">
@@ -2074,9 +2074,9 @@ export default function CentralApp() {
                     Agendar consulta
                   </button>
                 </div>
-              </section>
+              </motion.section>
 
-              <section className="grid-two">
+              <motion.section className="grid-two" variants={itemVariants}>
                 <motion.div className="panel" whileHover={{ y: -2 }}>
                   <div className="panel-header">
                     <h2>Fluxo de atendimento</h2>
@@ -2140,7 +2140,7 @@ export default function CentralApp() {
                             <div>
                               <strong>{item.cliente}</strong>
                               <small>
-                                {item.canal} · {formatRelativeMinutes(item.criado_em)}
+                                {item.canal} Â· {formatRelativeMinutes(item.criado_em)}
                               </small>
                             </div>
                             <div className="queue-actions">
@@ -2172,7 +2172,7 @@ export default function CentralApp() {
                                 <button
                                   className="ghost"
                                   type="button"
-                                  onClick={() => handleAtendimentoQuickAction(item.id, "Concluído")}
+                                  onClick={() => handleAtendimentoQuickAction(item.id, "ConcluÃ­do")}
                                 >
                                   Finalizar
                                 </button>
@@ -2184,12 +2184,12 @@ export default function CentralApp() {
                     </AnimatePresence>
                   </div>
                 </motion.div>
-              </section>
+              </motion.section>
 
-              <section className="grid-two">
+              <motion.section className="grid-two" variants={itemVariants}>
                 <motion.div className="panel" whileHover={{ y: -2 }}>
                   <div className="panel-header">
-                    <h2>Próximos agendamentos</h2>
+                    <h2>PrÃ³ximos agendamentos</h2>
                     <span className="chip">Hoje</span>
                   </div>
                   <div className="data-kanban" style={{ gridTemplateColumns: "1fr" }}>
@@ -2197,7 +2197,7 @@ export default function CentralApp() {
                       {upcomingAppointments.length === 0 && (
                         <div className="data-card data-card--empty">
                           <strong>Nenhum agendamento hoje</strong>
-                          <p>Organize o dia com um novo horário.</p>
+                          <p>Organize o dia com um novo horÃ¡rio.</p>
                           <button
                             className="primary"
                             type="button"
@@ -2209,13 +2209,13 @@ export default function CentralApp() {
                       )}
                       {upcomingAppointments.map((appointment) => (
                         <div key={appointment.id} className="data-card">
-                          <strong>{clientMap[appointment.cliente_id] ?? "Não informado"}</strong>
+                          <strong>{clientMap[appointment.cliente_id] ?? "NÃ£o informado"}</strong>
                           <p>
-                            {formatDate(appointment.data_hora)} ·{" "}
+                            {formatDate(appointment.data_hora)} Â·{" "}
                             {formatTime(appointment.data_hora)}
                           </p>
                           <span>
-                            {specialistMap[appointment.especialista_id] ?? "Não informado"}
+                            {specialistMap[appointment.especialista_id] ?? "NÃ£o informado"}
                           </span>
                         </div>
                       ))}
@@ -2249,9 +2249,9 @@ export default function CentralApp() {
                     </div>
                   </div>
                 </motion.div>
-              </section>
+              </motion.section>
 
-              <section className="grid-two">
+              <motion.section className="grid-two" variants={itemVariants}>
                 <motion.div className="panel" whileHover={{ y: -2 }}>
                   <div className="panel-header">
                     <div>
@@ -2311,7 +2311,7 @@ export default function CentralApp() {
                     </div>
                   </div>
                 </motion.div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -2323,7 +2323,7 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
             <div className="panel-header">
               <h2>Central Kanban</h2>
               <div className="panel-actions">
@@ -2348,7 +2348,7 @@ export default function CentralApp() {
                         cliente: clientMap[item.cliente_id ?? ""] ?? "Sem cliente",
                         status: item.status,
                         canal: item.canal ?? "",
-                        responsável: item.responsavel ?? "",
+                        responsavel: item.responsavel ?? "",
                       }))
                     )
                   }
@@ -2381,11 +2381,8 @@ export default function CentralApp() {
                   {filteredAtendimentos
                     .filter((item) => item.status === status)
                     .map((item) => (
-                      <motion.div
+                      <div
                         key={item.id}
-                        layout
-                        whileHover={{ scale: 1.02, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
                         className={`kanban-card clickable ${
                           draggingAtendimentoId === item.id ? "is-dragging" : ""
                         }`}
@@ -2395,14 +2392,14 @@ export default function CentralApp() {
                         onDragEnd={() => setDraggingAtendimentoId(null)}
                       >
                         <strong>{clientMap[item.cliente_id ?? ""] ?? "Sem cliente"}</strong>
-                        <span>Canal: {item.canal ?? "Não informado"}</span>
+                        <span>Canal: {item.canal ?? "Nao informado"}</span>
                         <span>Resp: {item.responsavel ?? "Equipe"}</span>
-                      </motion.div>
+                      </div>
                     ))}
                 </div>
               ))}
             </div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -2414,7 +2411,7 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
             <div className="panel-header">
               <h2>Clientes</h2>
               <div className="panel-actions">
@@ -2476,7 +2473,7 @@ export default function CentralApp() {
                 </div>
               ))}
             </div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -2488,7 +2485,7 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
             <div className="panel-header">
               <h2>Especialistas</h2>
               <div className="panel-actions">
@@ -2550,7 +2547,7 @@ export default function CentralApp() {
                 </div>
               ))}
             </div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -2562,7 +2559,7 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
             <div className="panel-header">
               <h2>Agenda</h2>
               <div className="panel-actions">
@@ -2584,10 +2581,11 @@ export default function CentralApp() {
                     exportCsv(
                       "agenda.csv",
                       filteredAgendamentos.map((appointment) => ({
-                        nome: clientMap[appointment.cliente_id] ?? "Não informado",
+                        nome: clientMap[appointment.cliente_id] ?? "Nao informado",
                         data: formatDate(appointment.data_hora),
-                        horário: formatTime(appointment.data_hora),
-                        especialista: specialistMap[appointment.especialista_id] ?? "Não informado",
+                        horario: formatTime(appointment.data_hora),
+                        especialista:
+                          specialistMap[appointment.especialista_id] ?? "Nao informado",
                         status: appointment.status,
                       }))
                     )
@@ -2619,21 +2617,21 @@ export default function CentralApp() {
                         onClick={() => setEditingAppointment(appointment)}
                       >
                         <strong>
-                          {clientMap[appointment.cliente_id] ?? "Não informado"}
+                          {clientMap[appointment.cliente_id] ?? "NÃ£o informado"}
                         </strong>
                         <p>
-                          {formatDate(appointment.data_hora)} ·{" "}
+                          {formatDate(appointment.data_hora)} Â·{" "}
                           {formatTime(appointment.data_hora)}
                         </p>
                         <span>
-                          {specialistMap[appointment.especialista_id] ?? "Não informado"}
+                          {specialistMap[appointment.especialista_id] ?? "NÃ£o informado"}
                         </span>
                       </div>
                     ))}
                 </div>
               ))}
             </div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -2645,9 +2643,9 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
             <div className="panel-header">
-              <h2>Cobranças</h2>
+              <h2>CobranÃ§as</h2>
               <div className="panel-actions">
                 <select
                   className="select"
@@ -2666,8 +2664,8 @@ export default function CentralApp() {
                     exportCsv(
                       "cobrancas.csv",
                       filteredCobrancas.map((payment) => ({
-                        cliente: clientMap[payment.cliente_id] ?? "Não informado",
-                        valor: hideMoney ? "R$ ••••" : payment.valor,
+                        cliente: clientMap[payment.cliente_id] ?? "NÃ£o informado",
+                        valor: hideMoney ? "R$ â€¢â€¢â€¢â€¢" : payment.valor,
                         status: payment.status,
                       }))
                     )
@@ -2689,7 +2687,7 @@ export default function CentralApp() {
                   onClick={() => setPaymentModalOpen(true)}
                   type="button"
                 >
-                  Nova cobrança
+                  Nova cobranÃ§a
                 </button>
                 <button
                   className="ghost"
@@ -2705,7 +2703,7 @@ export default function CentralApp() {
             <section className="grid-two">
               <div className="panel">
                 <div className="panel-header">
-                  <h2>Conciliação PagBank</h2>
+                  <h2>ConciliaÃ§Ã£o PagBank</h2>
                   <span className="chip">Hoje</span>
                 </div>
                 <div className="chart">
@@ -2734,9 +2732,9 @@ export default function CentralApp() {
                 </div>
                 {cobrancasDivergentes.slice(0, 5).map((payment) => (
                   <div key={payment.id} className="report-grid">
-                    <span>{clientMap[payment.cliente_id] ?? "Não informado"}</span>
+                    <span>{clientMap[payment.cliente_id] ?? "NÃ£o informado"}</span>
                     <span>
-                      {payment.status} · {payment.pagbank_status ?? "sem status"}
+                      {payment.status} Â· {payment.pagbank_status ?? "sem status"}
                     </span>
                   </div>
                 ))}
@@ -2760,7 +2758,7 @@ export default function CentralApp() {
                     <strong>{formatMoney(totalFees, hideMoney)}</strong>
                   </div>
                   <div className="chart-row">
-                    <span>Líquido</span>
+                    <span>LÃ­quido</span>
                     <div className="bar">
                       <span
                         style={{
@@ -2779,7 +2777,7 @@ export default function CentralApp() {
               <div className="panel">
                 <div className="panel-header">
                   <h2>Alertas PagBank</h2>
-                  <span className="chip">Últimos</span>
+                  <span className="chip">Ãšltimos</span>
                 </div>
                 {pagbankAlertas.length === 0 ? (
                   <p className="solara-empty">Sem alertas recentes.</p>
@@ -2789,7 +2787,7 @@ export default function CentralApp() {
                       <span>{alert.type}</span>
                       <span>
                         {formatDate(alert.created_at ?? "")}
-                        {alert.notify_channel ? ` · ${alert.notify_channel}` : ""}
+                        {alert.notify_channel ? ` Â· ${alert.notify_channel}` : ""}
                       </span>
                     </div>
                   ))
@@ -2809,7 +2807,7 @@ export default function CentralApp() {
                         className="data-card clickable"
                         onClick={() => setEditingPayment(payment)}
                       >
-                        <strong>{clientMap[payment.cliente_id] ?? "Não informado"}</strong>
+                        <strong>{clientMap[payment.cliente_id] ?? "NÃ£o informado"}</strong>
                         <p>{formatMoney(Number(payment.valor), hideMoney)}</p>
                         <span>Status: {payment.status}</span>
                       </div>
@@ -2817,7 +2815,7 @@ export default function CentralApp() {
                 </div>
               ))}
             </div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -2831,7 +2829,7 @@ export default function CentralApp() {
             >
               <section className="panel whatsapp-shell">
                 <div className="panel-header">
-                  <h2>WhatsApp da clínica</h2>
+                  <h2>WhatsApp da clinica</h2>
                   <div className="panel-actions">
                     <button
                       className="ghost"
@@ -2860,14 +2858,14 @@ export default function CentralApp() {
 
                 <div className="whatsapp-connection-select">
                   <label>
-                    Clínica / Instância
+                    ClÃ­nica / InstÃ¢ncia
                     <select
                       className="select"
                       value={selectedConexaoId ?? ""}
                       onChange={(event) => setSelectedConexaoId(event.target.value || null)}
                     >
                       {conexoes.length === 0 ? (
-                        <option value="">Nenhuma conexão cadastrada</option>
+                        <option value="">Nenhuma conexÃ£o cadastrada</option>
                       ) : null}
                       {conexoes.map((conexao) => (
                         <option key={conexao.id} value={conexao.id}>
@@ -2886,7 +2884,7 @@ export default function CentralApp() {
                     </div>
                     <div className="whatsapp-conversations-list">
                       {whatsappConversations.length === 0 ? (
-                        <p className="solara-empty">Nenhuma conversa nesta instância.</p>
+                        <p className="solara-empty">Nenhuma conversa nesta instÃ¢ncia.</p>
                       ) : (
                         whatsappConversations.map((thread) => (
                           <button
@@ -2898,7 +2896,7 @@ export default function CentralApp() {
                             onClick={() => setSelectedWhatsAppThread(thread.id)}
                           >
                             <strong>{thread.label}</strong>
-                            <span>{thread.phone || "Sem número"}</span>
+                            <span>{thread.phone || "Sem nÃºmero"}</span>
                             <small>{thread.lastMessage}</small>
                           </button>
                         ))
@@ -2909,15 +2907,15 @@ export default function CentralApp() {
                   <div className="whatsapp-attendant">
                     <div className="whatsapp-clinic-strip">
                       <div className="clinic-pill">
-                        <small>Clínica</small>
-                        <strong>{selectedConexao?.nome ?? currentTenant?.nome ?? "Não configurada"}</strong>
+                        <small>ClÃ­nica</small>
+                        <strong>{selectedConexao?.nome ?? currentTenant?.nome ?? "NÃ£o configurada"}</strong>
                       </div>
                       <div className="clinic-pill">
                         <small>WhatsApp</small>
                         <strong>{selectedConexao?.telefone ?? "--"}</strong>
                       </div>
                       <div className="clinic-pill">
-                        <small>Instância</small>
+                        <small>InstÃ¢ncia</small>
                         <strong>{selectedConexao?.instance_id ?? "--"}</strong>
                       </div>
                     </div>
@@ -2936,7 +2934,7 @@ export default function CentralApp() {
                           <span>
                             {selectedWhatsAppConversation?.phone
                               ? selectedWhatsAppConversation.phone
-                              : "Sem número"}
+                              : "Sem nÃºmero"}
                           </span>
                         </div>
                       </div>
@@ -2947,7 +2945,7 @@ export default function CentralApp() {
                       <div className="whatsapp-thread" ref={whatsappBodyRef}>
                         {!selectedWhatsAppConversation ? (
                           <p className="solara-empty">
-                            Nenhuma conversa ainda para esta instância.
+                            Nenhuma conversa ainda para esta instÃ¢ncia.
                           </p>
                         ) : (
                           selectedWhatsAppConversation.messages.map((evento) => {
@@ -2956,11 +2954,11 @@ export default function CentralApp() {
                             return (
                               <div key={evento.id} className={`whatsapp-bubble ${direction}`}>
                                 <strong className="whatsapp-bubble-author">
-                                  {direction === "out" ? "Clínica" : clientLabel}
+                                  {direction === "out" ? "ClÃ­nica" : clientLabel}
                                 </strong>
                                 <p>{extractWhatsAppEventText(evento)}</p>
                                 <small>
-                                  {(evento.event ?? "evento").replaceAll(".", " / ")} •{" "}
+                                  {(evento.event ?? "evento").replaceAll(".", " / ")} â€¢{" "}
                                   {evento.criado_em
                                     ? `${formatDate(evento.criado_em)} ${formatTime(
                                         evento.criado_em
@@ -3011,7 +3009,7 @@ export default function CentralApp() {
                             />
                             <input
                               className="input"
-                              placeholder="Número do cliente"
+                              placeholder="Numero do cliente"
                               value={sendTarget}
                               onChange={(event) => setSendTarget(event.target.value)}
                             />
@@ -3037,7 +3035,7 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
                 <div className="panel-header">
                   <div>
                     <h2>NPS</h2>
@@ -3091,7 +3089,7 @@ export default function CentralApp() {
                     ))
                   )}
                 </div>
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -3103,7 +3101,7 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
                 <div className="panel-header">
                   <div>
                     <h2>Automacoes da Solara</h2>
@@ -3312,7 +3310,7 @@ export default function CentralApp() {
                     </p>
                   </div>
                 )}
-              </section>
+              </motion.section>
             </motion.div>
           )}
 
@@ -3324,9 +3322,9 @@ export default function CentralApp() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              <section className="panel">
+              <motion.section className="panel" variants={itemVariants}>
                 <div className="panel-header">
-                  <h2>LGPD · Direitos do Titular</h2>
+                  <h2>LGPD Â· Direitos do Titular</h2>
                   <span className="chip">Admin</span>
                 </div>
                 <label>
@@ -3375,11 +3373,11 @@ export default function CentralApp() {
                     disabled={privacyLoading}
                     onClick={() => callPrivacy("/api/privacy/retention")}
                   >
-                    Retenção
+                    RetenÃ§Ã£o
                   </button>
                 </div>
                 {privacyStatus ? <p className="solara-empty">{privacyStatus}</p> : null}
-              </section>
+              </motion.section>
             </motion.div>
           )}
         </AnimatePresence>
@@ -3544,7 +3542,7 @@ export default function CentralApp() {
             />
           </label>
           <label>
-            Horário
+            HorÃ¡rio
             <input
               type="time"
               className="input"
@@ -3574,11 +3572,11 @@ export default function CentralApp() {
 
         <Modal
           open={paymentModalOpen}
-          title="Nova cobrança"
+          title="Nova cobranÃ§a"
           onClose={() => setPaymentModalOpen(false)}
           footer={
             <button className="primary" onClick={handleCreatePayment} type="button">
-              Salvar cobrança
+              Salvar cobranÃ§a
             </button>
           }
         >
@@ -3636,13 +3634,13 @@ export default function CentralApp() {
                 if (!pixPayload?.qrCodeText) return;
                 try {
                   await navigator.clipboard.writeText(pixPayload.qrCodeText);
-                  setPixCopyStatus("Código PIX copiado.");
+                  setPixCopyStatus("CÃ³digo PIX copiado.");
                 } catch {
-                  setPixCopyStatus("Não foi possível copiar o código PIX.");
+                  setPixCopyStatus("NÃ£o foi possÃ­vel copiar o cÃ³digo PIX.");
                 }
               }}
             >
-              Copiar código PIX
+              Copiar cÃ³digo PIX
             </button>
           }
         >
@@ -3650,7 +3648,7 @@ export default function CentralApp() {
             Pedido: <strong>{pixPayload?.orderId ?? "--"}</strong>
           </p>
           <label>
-            Código PIX
+            CÃ³digo PIX
             <textarea
               className="input"
               rows={4}
@@ -3725,7 +3723,7 @@ export default function CentralApp() {
             />
           </label>
           <label>
-            Responsável
+            ResponsÃ¡vel
             <input
               className="input"
               value={newAtendimento.responsavel}
@@ -3916,7 +3914,7 @@ export default function CentralApp() {
                 </select>
               </label>
               <label>
-                Data e horário
+                Data e horÃ¡rio
                 <input
                   className="input"
                   type="datetime-local"
@@ -3954,11 +3952,11 @@ export default function CentralApp() {
 
         <Modal
           open={Boolean(editingPayment)}
-          title="Editar cobrança"
+          title="Editar cobranÃ§a"
           onClose={() => setEditingPayment(null)}
           footer={
             <button className="primary" onClick={handleUpdatePayment} type="button">
-              Atualizar cobrança
+              Atualizar cobranÃ§a
             </button>
           }
         >
@@ -4050,7 +4048,7 @@ export default function CentralApp() {
               </p>
               <p>
                 Status PagBank:{" "}
-                <strong>{editingPayment.pagbank_status ?? "Não informado"}</strong>
+                <strong>{editingPayment.pagbank_status ?? "NÃ£o informado"}</strong>
               </p>
               <p>
                 Atualizado em:{" "}
@@ -4079,7 +4077,7 @@ export default function CentralApp() {
                 </a>
               ) : null}
               <label>
-                Código PIX
+                CÃ³digo PIX
                 <textarea
                   className="input"
                   rows={4}
@@ -4160,7 +4158,7 @@ export default function CentralApp() {
                 <input className="input" value={editingAtendimento.canal ?? ""} disabled />
               </label>
               <label>
-                Responsável
+                ResponsÃ¡vel
                 <input className="input" value={editingAtendimento.responsavel ?? ""} disabled />
               </label>
             </>
@@ -4322,3 +4320,4 @@ export default function CentralApp() {
     </div>
   );
 }
+

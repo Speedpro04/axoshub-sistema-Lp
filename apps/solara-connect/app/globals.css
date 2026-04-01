@@ -1163,6 +1163,21 @@ body {
   border: 1px solid rgba(0, 13, 61, 0.08);
 }
 
+.kanban-card.clickable {
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 13, 61, 0.08);
+}
+
+.kanban-card.clickable:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
 .kanban-card.is-dragging {
   opacity: 0.6;
   border-style: dashed;
