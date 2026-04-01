@@ -152,7 +152,7 @@ function extractWhatsAppEventText(evento: EvolutionEventRow) {
   }
 
   if (evento.media_type === "image") return "[Imagem recebida]";
-  if (evento.media_type === "audio") return "[Ãudio recebido]";
+  if (evento.media_type === "audio") return "[Áudio recebido]";
   if (evento.media_type) return `[Anexo ${evento.media_type}]`;
   return evento.event ?? "Evento de WhatsApp";
 }
@@ -541,7 +541,7 @@ export default function CentralApp() {
     "Agendado",
     "Confirmado",
     "Em atendimento",
-    "ConcluÃ­do",
+    "Concluído",
     "Cancelado",
   ];
 
@@ -550,7 +550,7 @@ export default function CentralApp() {
       Agendado: "#74b9ff",
       Confirmado: "#81ecec",
       "Em atendimento": "#ffeaa7",
-      "ConcluÃ­do": "#55efc4",
+      "Concluído": "#55efc4",
       Cancelado: "#ff7675",
     }),
     []
@@ -788,10 +788,10 @@ export default function CentralApp() {
     let mounted = true;
 
     async function bootstrapWhatsappConnection() {
-      setSendStatus("Preparando conexÃ£o automÃ¡tica da clÃ­nica...");
+      setSendStatus("Preparando conexão automática da clínica...");
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        if (mounted) setSendStatus("SessÃ£o invÃ¡lida. FaÃ§a login novamente.");
+        if (mounted) setSendStatus("Sessão inválida. Faça login novamente.");
         return;
       }
 
@@ -803,7 +803,7 @@ export default function CentralApp() {
       if (!response.ok) {
         const message = await extractApiError(
           response,
-          "Falha ao preparar conexÃ£o da clÃ­nica."
+          "Falha ao preparar conexão da clínica."
         );
         if (mounted) setSendStatus(message);
         return;
@@ -818,12 +818,12 @@ export default function CentralApp() {
         setSelectedConexaoId((prev) => prev ?? nextConexoes[0].id);
         setSendStatus(null);
       } else {
-        setSendStatus("ConexÃ£o nÃ£o encontrada. Abra Configurar clÃ­nica.");
+        setSendStatus("Conexão não encontrada. Abra Configurar clínica.");
       }
     }
 
     bootstrapWhatsappConnection().catch(() => {
-      if (mounted) setSendStatus("Falha ao preparar conexÃ£o da clÃ­nica.");
+      if (mounted) setSendStatus("Falha ao preparar conexão da clínica.");
     });
 
     return () => {
@@ -1138,7 +1138,7 @@ export default function CentralApp() {
       status: newPayment.status,
     });
     if (!created) {
-      setSaveError("Falha ao salvar cobranÃ§a no Supabase.");
+      setSaveError("Falha ao salvar cobrança no Supabase.");
       return;
     }
     let nextPayment = created;
@@ -1177,11 +1177,11 @@ export default function CentralApp() {
         }
       } else {
         setSaveError(
-          "CobranÃ§a salva, mas nÃ£o foi possÃ­vel gerar o PIX no PagBank."
+          "Cobrança salva, mas não foi possível gerar o PIX no PagBank."
         );
       }
     } catch {
-      setSaveError("CobranÃ§a salva, mas houve erro ao contactar o PagBank.");
+      setSaveError("Cobrança salva, mas houve erro ao contactar o PagBank.");
     }
     setCobrancas((prev) => [nextPayment, ...prev]);
     setPaymentModalOpen(false);
@@ -1224,7 +1224,7 @@ export default function CentralApp() {
           item.instance_id === newConexao.instance_id
       )
     ) {
-      setSaveError("JÃ¡ existe uma conexÃ£o com esse telefone ou instance.");
+      setSaveError("Já existe uma conexão com esse telefone ou instance.");
       return;
     }
     const created = await createEvolutionConnection({
@@ -1234,7 +1234,7 @@ export default function CentralApp() {
       api_url: newConexao.api_url,
     });
     if (!created) {
-      setSaveError("Falha ao salvar conexÃ£o da Evolution API.");
+      setSaveError("Falha ao salvar conexão da Evolution API.");
       return;
     }
     setConexoes((prev) => [created, ...prev]);
@@ -1534,7 +1534,7 @@ export default function CentralApp() {
       cliente_id: clientId,
       status: "Novo",
       canal: "WhatsApp",
-      responsavel: "RecepÃ§Ã£o",
+      responsavel: "Recepção",
     });
     setAtendimentoModalOpen(true);
   };
@@ -1562,16 +1562,16 @@ export default function CentralApp() {
   };
 
   const formatRelativeMinutes = (value?: string | null) => {
-    if (!value) return "hÃ¡ alguns minutos";
+    if (!value) return "há alguns minutos";
     const diffMs = Date.now() - new Date(value).getTime();
-    if (Number.isNaN(diffMs)) return "hÃ¡ alguns minutos";
+    if (Number.isNaN(diffMs)) return "há alguns minutos";
     const minutes = Math.max(1, Math.round(diffMs / 60000));
-    return `hÃ¡ ${minutes} min`;
+    return `há ${minutes} min`;
   };
 
   const getFilaBadge = (status: string, criadoEm?: string | null) => {
     if (status === "Em andamento") return "fila-badge fila-badge--green";
-    if (status === "ConcluÃ­do") return "fila-badge fila-badge--dark";
+    if (status === "Concluído") return "fila-badge fila-badge--dark";
     if (status === "Novo") return "fila-badge fila-badge--blue";
     if (status === "Aguardando") {
       const minutes = criadoEm
@@ -1659,7 +1659,7 @@ export default function CentralApp() {
       } else {
         const result = await response.json();
         setReconcileStatus(
-          `ConciliaÃ§Ã£o concluÃ­da. Atualizadas: ${result.updated ?? 0}.`
+          `Conciliação concluída. Atualizadas: ${result.updated ?? 0}.`
         );
         const refreshed = await fetchDashboardData();
         setCobrancas(refreshed.cobrancas);
@@ -1688,7 +1688,7 @@ export default function CentralApp() {
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        setPrivacyStatus(payload?.error ?? "Falha na operaÃ§Ã£o LGPD.");
+        setPrivacyStatus(payload?.error ?? "Falha na operação LGPD.");
       } else {
         if (endpoint.endsWith("/export")) {
           const payload = await response.json();
@@ -1701,17 +1701,17 @@ export default function CentralApp() {
           link.download = `lgpd-export-${privacyClientId}.json`;
           link.click();
           URL.revokeObjectURL(url);
-          setPrivacyStatus("ExportaÃ§Ã£o gerada com sucesso.");
+          setPrivacyStatus("Exportação gerada com sucesso.");
         } else {
           const payload = await response.json().catch(() => null);
-          setPrivacyStatus(payload?.message ?? "OperaÃ§Ã£o concluÃ­da.");
+          setPrivacyStatus(payload?.message ?? "Operação concluída.");
         }
         const refreshed = await fetchDashboardData();
         setClientes(refreshed.clientes);
         setCobrancas(refreshed.cobrancas);
       }
     } catch {
-      setPrivacyStatus("Falha na operaÃ§Ã£o LGPD.");
+      setPrivacyStatus("Falha na operação LGPD.");
     } finally {
       setPrivacyLoading(false);
     }
@@ -1765,7 +1765,7 @@ export default function CentralApp() {
       status: editingPayment.status,
     });
     if (!updated) {
-      setSaveError("Falha ao atualizar cobranÃ§a no Supabase.");
+      setSaveError("Falha ao atualizar cobrança no Supabase.");
       return;
     }
     setCobrancas((prev) =>
@@ -1824,7 +1824,7 @@ export default function CentralApp() {
   };
 
   const sectionMeta: Array<{ key: SectionKey; label: string }> = [
-    { key: "dashboard", label: "VisÃ£o geral" },
+    { key: "dashboard", label: "Visão geral" },
     { key: "kanban", label: "Central Kanban" },
     { key: "clientes", label: "Clientes" },
     { key: "especialistas", label: "Especialistas" },
@@ -1833,10 +1833,10 @@ export default function CentralApp() {
     { key: "nps", label: "NPS" },
     { key: "automacoes", label: "Automacoes" },
     { key: "privacidade", label: "Privacidade" },
-    { key: "cobrancas", label: "CobranÃ§as" },
+    { key: "cobrancas", label: "Cobranças" },
   ] as const;
 
-  const atendimentoColumns = ["Novo", "Em andamento", "Aguardando", "ConcluÃ­do"];
+  const atendimentoColumns = ["Novo", "Em andamento", "Aguardando", "Concluído"];
 
   const atendimentoCounts = atendimentoColumns.reduce<Record<string, number>>((acc, status) => {
     acc[status] = atendimentos.filter((item) => item.status === status).length;
@@ -1851,7 +1851,7 @@ export default function CentralApp() {
           id: item.id,
           status,
           cliente: clientMap[item.cliente_id ?? ""] ?? "Sem cliente",
-          canal: item.canal ?? "Canal nÃ£o informado",
+          canal: item.canal ?? "Canal não informado",
           criado_em: item.criado_em ?? null,
         }))
     )
@@ -1879,7 +1879,7 @@ export default function CentralApp() {
           <img src="/axos-hub-logo.png" alt="Axos Hub" />
         </div>
         <div className="sidebar-title">
-          MÃ“DULO DE RECEPÃ‡ÃƒO DIGITAL
+          MÓDULO DE RECEPÇÃO DIGITAL
           <span className="sidebar-subtitle">SOLARA CONNECT</span>
         </div>
         <nav className="nav">
@@ -1906,9 +1906,9 @@ export default function CentralApp() {
       <main className="main">
         <header className="topbar">
           <div>
-            <h1>MÃ³dulo de RecepÃ§Ã£o Digital</h1>
+            <h1>Módulo de Recepção Digital</h1>
             <p>
-              ClÃ­nicas mÃ©dicas, odontolÃ³gicas, de emagrecimento e estÃ©ticas conectadas
+              Clínicas médicas, odontológicas, de emagrecimento e estéticas conectadas
               em tempo real.
             </p>
             {!hasSupabaseEnv() && (
@@ -1959,7 +1959,7 @@ export default function CentralApp() {
                 />
               </div>
               <span>
-                {solaraStatus?.status === "human" ? "SolicitaÃ§Ã£o humana" : "Solara atendendo"}
+                {solaraStatus?.status === "human" ? "Solicitação humana" : "Solara atendendo"}
               </span>
               {newEventsCount > 0 && <span className="event-badge">{newEventsCount}</span>}
             </div>
@@ -2028,19 +2028,19 @@ export default function CentralApp() {
                     />
                   </div>
                   <div>
-                    <strong>{loading ? "ConexÃ£o instÃ¡vel" : "Sistema online"}</strong>
+                    <strong>{loading ? "Conexão instável" : "Sistema online"}</strong>
                     <small>Atendimentos hoje: {atendimentos.length}</small>
                   </div>
                 </div>
                 <div className="status-chip">
                   <div>
-                    <strong>Tempo mÃ©dio de espera</strong>
+                    <strong>Tempo médio de espera</strong>
                     <small>-- min</small>
                   </div>
                 </div>
                 <div className="status-chip">
                   <div>
-                    <strong>Ãšltima atualizaÃ§Ã£o</strong>
+                    <strong>Última atualização</strong>
                     <small>
                       {lastDashboardUpdate
                         ? formatTime(lastDashboardUpdate.toISOString())
@@ -2172,7 +2172,7 @@ export default function CentralApp() {
                                 <button
                                   className="ghost"
                                   type="button"
-                                  onClick={() => handleAtendimentoQuickAction(item.id, "ConcluÃ­do")}
+                                  onClick={() => handleAtendimentoQuickAction(item.id, "Concluído")}
                                 >
                                   Finalizar
                                 </button>
@@ -2189,7 +2189,7 @@ export default function CentralApp() {
               <motion.section className="grid-two" variants={itemVariants}>
                 <motion.div className="panel" whileHover={{ y: -2 }}>
                   <div className="panel-header">
-                    <h2>PrÃ³ximos agendamentos</h2>
+                    <h2>Próximos agendamentos</h2>
                     <span className="chip">Hoje</span>
                   </div>
                   <div className="data-kanban" style={{ gridTemplateColumns: "1fr" }}>
@@ -2197,7 +2197,7 @@ export default function CentralApp() {
                       {upcomingAppointments.length === 0 && (
                         <div className="data-card data-card--empty">
                           <strong>Nenhum agendamento hoje</strong>
-                          <p>Organize o dia com um novo horÃ¡rio.</p>
+                          <p>Organize o dia com um novo horário.</p>
                           <button
                             className="primary"
                             type="button"
@@ -2209,13 +2209,13 @@ export default function CentralApp() {
                       )}
                       {upcomingAppointments.map((appointment) => (
                         <div key={appointment.id} className="data-card">
-                          <strong>{clientMap[appointment.cliente_id] ?? "NÃ£o informado"}</strong>
+                          <strong>{clientMap[appointment.cliente_id] ?? "Não informado"}</strong>
                           <p>
                             {formatDate(appointment.data_hora)} Â·{" "}
                             {formatTime(appointment.data_hora)}
                           </p>
                           <span>
-                            {specialistMap[appointment.especialista_id] ?? "NÃ£o informado"}
+                            {specialistMap[appointment.especialista_id] ?? "Não informado"}
                           </span>
                         </div>
                       ))}
@@ -2617,14 +2617,14 @@ export default function CentralApp() {
                         onClick={() => setEditingAppointment(appointment)}
                       >
                         <strong>
-                          {clientMap[appointment.cliente_id] ?? "NÃ£o informado"}
+                          {clientMap[appointment.cliente_id] ?? "Não informado"}
                         </strong>
                         <p>
                           {formatDate(appointment.data_hora)} Â·{" "}
                           {formatTime(appointment.data_hora)}
                         </p>
                         <span>
-                          {specialistMap[appointment.especialista_id] ?? "NÃ£o informado"}
+                          {specialistMap[appointment.especialista_id] ?? "Não informado"}
                         </span>
                       </div>
                     ))}
@@ -2645,7 +2645,7 @@ export default function CentralApp() {
             >
               <motion.section className="panel" variants={itemVariants}>
             <div className="panel-header">
-              <h2>CobranÃ§as</h2>
+              <h2>Cobranças</h2>
               <div className="panel-actions">
                 <select
                   className="select"
@@ -2664,7 +2664,7 @@ export default function CentralApp() {
                     exportCsv(
                       "cobrancas.csv",
                       filteredCobrancas.map((payment) => ({
-                        cliente: clientMap[payment.cliente_id] ?? "NÃ£o informado",
+                        cliente: clientMap[payment.cliente_id] ?? "Não informado",
                         valor: hideMoney ? "R$ â€¢â€¢â€¢â€¢" : payment.valor,
                         status: payment.status,
                       }))
@@ -2687,7 +2687,7 @@ export default function CentralApp() {
                   onClick={() => setPaymentModalOpen(true)}
                   type="button"
                 >
-                  Nova cobranÃ§a
+                  Nova cobrança
                 </button>
                 <button
                   className="ghost"
@@ -2703,7 +2703,7 @@ export default function CentralApp() {
             <section className="grid-two">
               <div className="panel">
                 <div className="panel-header">
-                  <h2>ConciliaÃ§Ã£o PagBank</h2>
+                  <h2>Conciliação PagBank</h2>
                   <span className="chip">Hoje</span>
                 </div>
                 <div className="chart">
@@ -2732,7 +2732,7 @@ export default function CentralApp() {
                 </div>
                 {cobrancasDivergentes.slice(0, 5).map((payment) => (
                   <div key={payment.id} className="report-grid">
-                    <span>{clientMap[payment.cliente_id] ?? "NÃ£o informado"}</span>
+                    <span>{clientMap[payment.cliente_id] ?? "Não informado"}</span>
                     <span>
                       {payment.status} Â· {payment.pagbank_status ?? "sem status"}
                     </span>
@@ -2758,7 +2758,7 @@ export default function CentralApp() {
                     <strong>{formatMoney(totalFees, hideMoney)}</strong>
                   </div>
                   <div className="chart-row">
-                    <span>LÃ­quido</span>
+                    <span>Líquido</span>
                     <div className="bar">
                       <span
                         style={{
@@ -2777,7 +2777,7 @@ export default function CentralApp() {
               <div className="panel">
                 <div className="panel-header">
                   <h2>Alertas PagBank</h2>
-                  <span className="chip">Ãšltimos</span>
+                  <span className="chip">Últimos</span>
                 </div>
                 {pagbankAlertas.length === 0 ? (
                   <p className="solara-empty">Sem alertas recentes.</p>
@@ -2807,7 +2807,7 @@ export default function CentralApp() {
                         className="data-card clickable"
                         onClick={() => setEditingPayment(payment)}
                       >
-                        <strong>{clientMap[payment.cliente_id] ?? "NÃ£o informado"}</strong>
+                        <strong>{clientMap[payment.cliente_id] ?? "Não informado"}</strong>
                         <p>{formatMoney(Number(payment.valor), hideMoney)}</p>
                         <span>Status: {payment.status}</span>
                       </div>
@@ -2858,14 +2858,14 @@ export default function CentralApp() {
 
                 <div className="whatsapp-connection-select">
                   <label>
-                    ClÃ­nica / InstÃ¢ncia
+                    Clínica / Instância
                     <select
                       className="select"
                       value={selectedConexaoId ?? ""}
                       onChange={(event) => setSelectedConexaoId(event.target.value || null)}
                     >
                       {conexoes.length === 0 ? (
-                        <option value="">Nenhuma conexÃ£o cadastrada</option>
+                        <option value="">Nenhuma conexão cadastrada</option>
                       ) : null}
                       {conexoes.map((conexao) => (
                         <option key={conexao.id} value={conexao.id}>
@@ -2884,7 +2884,7 @@ export default function CentralApp() {
                     </div>
                     <div className="whatsapp-conversations-list">
                       {whatsappConversations.length === 0 ? (
-                        <p className="solara-empty">Nenhuma conversa nesta instÃ¢ncia.</p>
+                        <p className="solara-empty">Nenhuma conversa nesta instância.</p>
                       ) : (
                         whatsappConversations.map((thread) => (
                           <button
@@ -2896,7 +2896,7 @@ export default function CentralApp() {
                             onClick={() => setSelectedWhatsAppThread(thread.id)}
                           >
                             <strong>{thread.label}</strong>
-                            <span>{thread.phone || "Sem nÃºmero"}</span>
+                            <span>{thread.phone || "Sem número"}</span>
                             <small>{thread.lastMessage}</small>
                           </button>
                         ))
@@ -2907,15 +2907,15 @@ export default function CentralApp() {
                   <div className="whatsapp-attendant">
                     <div className="whatsapp-clinic-strip">
                       <div className="clinic-pill">
-                        <small>ClÃ­nica</small>
-                        <strong>{selectedConexao?.nome ?? currentTenant?.nome ?? "NÃ£o configurada"}</strong>
+                        <small>Clínica</small>
+                        <strong>{selectedConexao?.nome ?? currentTenant?.nome ?? "Não configurada"}</strong>
                       </div>
                       <div className="clinic-pill">
                         <small>WhatsApp</small>
                         <strong>{selectedConexao?.telefone ?? "--"}</strong>
                       </div>
                       <div className="clinic-pill">
-                        <small>InstÃ¢ncia</small>
+                        <small>Instância</small>
                         <strong>{selectedConexao?.instance_id ?? "--"}</strong>
                       </div>
                     </div>
@@ -2934,7 +2934,7 @@ export default function CentralApp() {
                           <span>
                             {selectedWhatsAppConversation?.phone
                               ? selectedWhatsAppConversation.phone
-                              : "Sem nÃºmero"}
+                              : "Sem número"}
                           </span>
                         </div>
                       </div>
@@ -2945,7 +2945,7 @@ export default function CentralApp() {
                       <div className="whatsapp-thread" ref={whatsappBodyRef}>
                         {!selectedWhatsAppConversation ? (
                           <p className="solara-empty">
-                            Nenhuma conversa ainda para esta instÃ¢ncia.
+                            Nenhuma conversa ainda para esta instância.
                           </p>
                         ) : (
                           selectedWhatsAppConversation.messages.map((evento) => {
@@ -2954,7 +2954,7 @@ export default function CentralApp() {
                             return (
                               <div key={evento.id} className={`whatsapp-bubble ${direction}`}>
                                 <strong className="whatsapp-bubble-author">
-                                  {direction === "out" ? "ClÃ­nica" : clientLabel}
+                                  {direction === "out" ? "Clínica" : clientLabel}
                                 </strong>
                                 <p>{extractWhatsAppEventText(evento)}</p>
                                 <small>
@@ -3373,7 +3373,7 @@ export default function CentralApp() {
                     disabled={privacyLoading}
                     onClick={() => callPrivacy("/api/privacy/retention")}
                   >
-                    RetenÃ§Ã£o
+                    Retenção
                   </button>
                 </div>
                 {privacyStatus ? <p className="solara-empty">{privacyStatus}</p> : null}
@@ -3542,7 +3542,7 @@ export default function CentralApp() {
             />
           </label>
           <label>
-            HorÃ¡rio
+            Horário
             <input
               type="time"
               className="input"
@@ -3572,11 +3572,11 @@ export default function CentralApp() {
 
         <Modal
           open={paymentModalOpen}
-          title="Nova cobranÃ§a"
+          title="Nova cobrança"
           onClose={() => setPaymentModalOpen(false)}
           footer={
             <button className="primary" onClick={handleCreatePayment} type="button">
-              Salvar cobranÃ§a
+              Salvar cobrança
             </button>
           }
         >
@@ -3634,13 +3634,13 @@ export default function CentralApp() {
                 if (!pixPayload?.qrCodeText) return;
                 try {
                   await navigator.clipboard.writeText(pixPayload.qrCodeText);
-                  setPixCopyStatus("CÃ³digo PIX copiado.");
+                  setPixCopyStatus("Código PIX copiado.");
                 } catch {
-                  setPixCopyStatus("NÃ£o foi possÃ­vel copiar o cÃ³digo PIX.");
+                  setPixCopyStatus("Não foi possível copiar o código PIX.");
                 }
               }}
             >
-              Copiar cÃ³digo PIX
+              Copiar código PIX
             </button>
           }
         >
@@ -3648,7 +3648,7 @@ export default function CentralApp() {
             Pedido: <strong>{pixPayload?.orderId ?? "--"}</strong>
           </p>
           <label>
-            CÃ³digo PIX
+            Código PIX
             <textarea
               className="input"
               rows={4}
@@ -3723,7 +3723,7 @@ export default function CentralApp() {
             />
           </label>
           <label>
-            ResponsÃ¡vel
+            Responsável
             <input
               className="input"
               value={newAtendimento.responsavel}
@@ -3914,7 +3914,7 @@ export default function CentralApp() {
                 </select>
               </label>
               <label>
-                Data e horÃ¡rio
+                Data e horário
                 <input
                   className="input"
                   type="datetime-local"
@@ -3952,11 +3952,11 @@ export default function CentralApp() {
 
         <Modal
           open={Boolean(editingPayment)}
-          title="Editar cobranÃ§a"
+          title="Editar cobrança"
           onClose={() => setEditingPayment(null)}
           footer={
             <button className="primary" onClick={handleUpdatePayment} type="button">
-              Atualizar cobranÃ§a
+              Atualizar cobrança
             </button>
           }
         >
@@ -4048,7 +4048,7 @@ export default function CentralApp() {
               </p>
               <p>
                 Status PagBank:{" "}
-                <strong>{editingPayment.pagbank_status ?? "NÃ£o informado"}</strong>
+                <strong>{editingPayment.pagbank_status ?? "Não informado"}</strong>
               </p>
               <p>
                 Atualizado em:{" "}
@@ -4077,7 +4077,7 @@ export default function CentralApp() {
                 </a>
               ) : null}
               <label>
-                CÃ³digo PIX
+                Código PIX
                 <textarea
                   className="input"
                   rows={4}
@@ -4158,7 +4158,7 @@ export default function CentralApp() {
                 <input className="input" value={editingAtendimento.canal ?? ""} disabled />
               </label>
               <label>
-                ResponsÃ¡vel
+                Responsável
                 <input className="input" value={editingAtendimento.responsavel ?? ""} disabled />
               </label>
             </>
