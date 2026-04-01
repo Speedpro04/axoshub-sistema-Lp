@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className="theme-shell">{children}</body>
+      <body className="theme-shell" style={{ fontFamily: "'Tahoma', 'MS Sans Serif', 'Microsoft Sans Serif', Arial, sans-serif", fontSize: "11px" }}>{children}</body>
     </html>
   );
 }
