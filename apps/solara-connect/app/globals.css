@@ -313,9 +313,10 @@ body {
 
 .topbar {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: flex-start;
   gap: 24px;
-  align-items: flex-start;
+  align-items: stretch;
   margin: 0 -32px;
   width: calc(100% + 64px);
   background: #000f41;
@@ -359,7 +360,8 @@ body {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
+  width: 100%;
 }
 
 .topbar .select,
@@ -2095,5 +2097,15 @@ body {
 
 /* Hide Next.js dev indicator badge (black "N") */
 nextjs-portal {
+  display: none !important;
+}
+
+/* Hide Next.js dev overlay/toolbar floating bubble in local dev */
+[data-next-badge-root],
+[data-nextjs-dev-tools-button],
+[data-nextjs-devtools],
+#nextjs-devtools,
+#nextjs__container,
+#__next-build-watcher {
   display: none !important;
 }
