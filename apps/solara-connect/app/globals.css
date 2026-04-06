@@ -124,6 +124,9 @@ body {
 
 .solara-action-button {
   min-width: 142px;
+  color: #00cec9;
+  font-weight: 800;
+  border-color: #00cec9;
 }
 
 .solara-action-button.open {

@@ -2034,6 +2034,17 @@ export default function CentralApp() {
                 <span>{billingStatus.label}</span>
               </div>
             </div>
+            <button
+              className={`ghost action-button solara-action-button ${
+                solaraOpen ? "open" : ""
+              }`}
+              aria-label="Solara AI"
+              type="button"
+              onClick={() => setSolaraOpen((prev) => !prev)}
+              aria-expanded={solaraOpen}
+            >
+              Solara AI
+            </button>
           </div>
         </header>
 
@@ -2089,17 +2100,6 @@ export default function CentralApp() {
                       </small>
                     </div>
                   </div>
-                  <button
-                    className={`ghost action-button solara-action-button ${
-                      solaraOpen ? "open" : ""
-                    }`}
-                    aria-label="Solara AI"
-                    type="button"
-                    onClick={() => setSolaraOpen((prev) => !prev)}
-                    aria-expanded={solaraOpen}
-                  >
-                    Solara AI
-                  </button>
                 </div>
                 <div className="dashboard-actions-main">
                   <button
