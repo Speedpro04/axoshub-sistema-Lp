@@ -2113,6 +2113,8 @@ export default function CentralApp() {
                   >
                     Agendar consulta
                   </button>
+                </div>
+                <div className="dashboard-actions-status">
                   <button
                     className={`ghost action-button solara-action-button ${
                       solaraOpen ? "open" : ""
