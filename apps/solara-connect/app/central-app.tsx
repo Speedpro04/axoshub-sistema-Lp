@@ -2046,50 +2046,6 @@ export default function CentralApp() {
               exit="hidden"
               variants={containerVariants}
             >
-              <motion.section className="dashboard-statusbar" variants={itemVariants}>
-                <div className={`status-chip ${loading ? "status-chip--warn" : ""}`}>
-                  <div style={{ position: "relative", width: 8, height: 8, marginRight: 8 }}>
-                    <motion.span
-                      className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
-                      variants={pulseVariants}
-                      animate="pulse"
-                      style={{
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: "50%",
-                        zIndex: 1,
-                        margin: 0,
-                      }}
-                    />
-                    <span
-                      className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
-                      style={{ position: "relative", zIndex: 2, margin: 0 }}
-                    />
-                  </div>
-                  <div>
-                    <strong>{loading ? "Conexão instável" : "Sistema online"}</strong>
-                    <small>Atendimentos hoje: {atendimentos.length}</small>
-                  </div>
-                </div>
-                <div className="status-chip">
-                  <div>
-                    <strong>Tempo médio de espera</strong>
-                    <small>-- min</small>
-                  </div>
-                </div>
-                <div className="status-chip">
-                  <div>
-                    <strong>Última atualização</strong>
-                    <small>
-                      {lastDashboardUpdate
-                        ? formatTime(lastDashboardUpdate.toISOString())
-                        : "agora"}
-                    </small>
-                  </div>
-                </div>
-              </motion.section>
-
               <motion.section className="dashboard-actions" variants={itemVariants}>
                 <div className="dashboard-actions-main">
                   <button
@@ -2115,6 +2071,47 @@ export default function CentralApp() {
                   </button>
                 </div>
                 <div className="dashboard-actions-status">
+                  <div className={`status-chip ${loading ? "status-chip--warn" : ""}`}>
+                    <div style={{ position: "relative", width: 8, height: 8, marginRight: 8 }}>
+                      <motion.span
+                        className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
+                        variants={pulseVariants}
+                        animate="pulse"
+                        style={{
+                          position: "absolute",
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "50%",
+                          zIndex: 1,
+                          margin: 0,
+                        }}
+                      />
+                      <span
+                        className={`status-dot ${loading ? "status-dot--yellow" : "status-dot--green"}`}
+                        style={{ position: "relative", zIndex: 2, margin: 0 }}
+                      />
+                    </div>
+                    <div>
+                      <strong>{loading ? "Conexão instável" : "Sistema online"}</strong>
+                      <small>Atendimentos hoje: {atendimentos.length}</small>
+                    </div>
+                  </div>
+                  <div className="status-chip">
+                    <div>
+                      <strong>Tempo médio de espera</strong>
+                      <small>-- min</small>
+                    </div>
+                  </div>
+                  <div className="status-chip">
+                    <div>
+                      <strong>Última atualização</strong>
+                      <small>
+                        {lastDashboardUpdate
+                          ? formatTime(lastDashboardUpdate.toISOString())
+                          : "agora"}
+                      </small>
+                    </div>
+                  </div>
                   <button
                     className={`ghost action-button solara-action-button ${
                       solaraOpen ? "open" : ""
