@@ -4298,30 +4298,13 @@ export default function CentralApp() {
         </div>
       ) : null}
       <button
-        className="ai-sun"
+        className={`solara-toggle-card ${solaraOpen ? "open" : ""}`}
         aria-label="Solara AI"
         type="button"
         onClick={() => setSolaraOpen((prev) => !prev)}
         aria-expanded={solaraOpen}
       >
-        <motion.div
-          className="ai-sun-icon"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-        >
-          <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-            <circle cx="32" cy="32" r="12" />
-            <line x1="32" y1="4" x2="32" y2="14" />
-            <line x1="32" y1="50" x2="32" y2="60" />
-            <line x1="4" y1="32" x2="14" y2="32" />
-            <line x1="50" y1="32" x2="60" y2="32" />
-            <line x1="12" y1="12" x2="19" y2="19" />
-            <line x1="45" y1="45" x2="52" y2="52" />
-            <line x1="12" y1="52" x2="19" y2="45" />
-            <line x1="45" y1="19" x2="52" y2="12" />
-          </svg>
-        </motion.div>
-        <span>SOLARA</span>
+        Solara AI
       </button>
     </div>
   );
