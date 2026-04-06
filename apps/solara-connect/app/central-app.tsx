@@ -1914,7 +1914,7 @@ export default function CentralApp() {
           <div>
             <h1>Módulo de Recepção Digital</h1>
             <p>
-              Clínicas médicas, de emagrecimento e estéticas conectadas
+              Clínicas médicas conectadas
               em tempo real.
             </p>
             {!hasSupabaseEnv() && (
