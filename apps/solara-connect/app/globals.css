@@ -122,43 +122,14 @@ body {
   margin-top: 2px;
 }
 
-.solara-toggle-card {
-  position: fixed;
-  right: 34px;
-  top: 200px;
-  min-width: 132px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 1px solid #00cec9;
-  background: #ffffff;
-  color: #0b163f;
-  font-size: 0.92rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  z-index: 30;
-  transition: all 0.2s ease;
+.solara-action-button {
+  min-width: 142px;
 }
 
-.solara-toggle-card:hover {
-  border-color: #00f5ef;
-  color: #000f41;
-  transform: translateY(-1px);
-}
-
-.solara-toggle-card.open {
+.solara-action-button.open {
   background: #000f41;
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.4);
-}
-
-@media (max-width: 980px) {
-  .solara-toggle-card {
-    top: auto;
-    right: 20px;
-    bottom: 20px;
-  }
 }
 
 .solara-panel {

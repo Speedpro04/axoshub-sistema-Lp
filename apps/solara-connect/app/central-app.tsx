@@ -2113,6 +2113,17 @@ export default function CentralApp() {
                   >
                     Agendar consulta
                   </button>
+                  <button
+                    className={`ghost action-button solara-action-button ${
+                      solaraOpen ? "open" : ""
+                    }`}
+                    aria-label="Solara AI"
+                    type="button"
+                    onClick={() => setSolaraOpen((prev) => !prev)}
+                    aria-expanded={solaraOpen}
+                  >
+                    Solara AI
+                  </button>
                 </div>
               </motion.section>
 
@@ -4331,15 +4342,6 @@ export default function CentralApp() {
           </div>
         </div>
       ) : null}
-      <button
-        className={`solara-toggle-card ${solaraOpen ? "open" : ""}`}
-        aria-label="Solara AI"
-        type="button"
-        onClick={() => setSolaraOpen((prev) => !prev)}
-        aria-expanded={solaraOpen}
-      >
-        Solara AI
-      </button>
     </div>
   );
 }
