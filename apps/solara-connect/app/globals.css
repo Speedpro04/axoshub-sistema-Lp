@@ -123,8 +123,8 @@ body {
 
 .solara-toggle-card {
   position: fixed;
-  right: 24px;
-  bottom: 20px;
+  right: 34px;
+  top: 200px;
   min-width: 132px;
   padding: 10px 16px;
   border-radius: 8px;
@@ -150,6 +150,14 @@ body {
   background: #000f41;
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 980px) {
+  .solara-toggle-card {
+    top: auto;
+    right: 20px;
+    bottom: 20px;
+  }
 }
 
 .solara-panel {
