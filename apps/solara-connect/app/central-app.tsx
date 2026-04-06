@@ -88,15 +88,31 @@ function Modal({ open, title, onClose, children, footer }: ModalProps) {
 
 const BRAZIL_TZ = "America/Sao_Paulo";
 
+function parseDateInput(value: string) {
+  if (!value) return null;
+  const normalized = value
+    .trim()
+    .replace(/UTC\s*([+-])\s*(\d{1,2})(?::?(\d{2}))?/i, (_, signal, hh, mm) => {
+      const hours = String(hh).padStart(2, "0");
+      const minutes = String(mm ?? "00").padStart(2, "0");
+      return `${signal}${hours}:${minutes}`;
+    });
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
 function formatDate(value: string) {
   if (!value) return "--";
-  const date = new Date(value);
+  const date = parseDateInput(value);
+  if (!date) return "--";
   return date.toLocaleDateString("pt-BR", { timeZone: BRAZIL_TZ });
 }
 
 function formatTime(value: string) {
   if (!value) return "--";
-  const date = new Date(value);
+  const date = parseDateInput(value);
+  if (!date) return "--";
   return date.toLocaleTimeString("pt-BR", {
     timeZone: BRAZIL_TZ,
     hour: "2-digit",
@@ -105,7 +121,7 @@ function formatTime(value: string) {
 }
 
 function formatMoney(value: number, hidden: boolean) {
-  if (hidden) return "R$ â€¢â€¢â€¢â€¢";
+  if (hidden) return "R$ ****";
   return `R$ ${value.toFixed(2)}`;
 }
 
@@ -193,7 +209,7 @@ function extractEventClientLabel(evento: EvolutionEventRow) {
     firstText(record?.pushName) ??
     firstText(record?.pushname) ??
     firstText(record?.senderName);
-  if (pushName && phone) return `${pushName} â€¢ ${phone}`;
+  if (pushName && phone) return `${pushName} - ${phone}`;
   if (pushName) return pushName;
   if (phone) return phone;
   return "Cliente";
@@ -944,7 +960,8 @@ export default function CentralApp() {
       });
       return;
     }
-    const baseName = selectedWhatsAppConversation.label.split(" â€¢ ")[0]?.trim() ?? "";
+    const baseName =
+      selectedWhatsAppConversation.label.split(/\s-\s|\sâ€¢\s|\s•\s/)[0]?.trim() ?? "";
     const nextName = baseName === "Cliente" ? "" : baseName;
     setSendClientName(nextName);
     if (selectedWhatsAppConversation.phone) {
@@ -1570,7 +1587,9 @@ export default function CentralApp() {
 
   const formatRelativeMinutes = (value?: string | null) => {
     if (!value) return "há alguns minutos";
-    const diffMs = Date.now() - new Date(value).getTime();
+    const parsed = parseDateInput(value);
+    if (!parsed) return "há alguns minutos";
+    const diffMs = Date.now() - parsed.getTime();
     if (Number.isNaN(diffMs)) return "há alguns minutos";
     const minutes = Math.max(1, Math.round(diffMs / 60000));
     return `há ${minutes} min`;
@@ -1581,9 +1600,8 @@ export default function CentralApp() {
     if (status === "Concluído") return "fila-badge fila-badge--dark";
     if (status === "Novo") return "fila-badge fila-badge--blue";
     if (status === "Aguardando") {
-      const minutes = criadoEm
-        ? Math.round((Date.now() - new Date(criadoEm).getTime()) / 60000)
-        : 0;
+      const parsed = criadoEm ? parseDateInput(criadoEm) : null;
+      const minutes = parsed ? Math.round((Date.now() - parsed.getTime()) / 60000) : 0;
       if (minutes >= 10) return "fila-badge fila-badge--red";
       return "fila-badge fila-badge--yellow";
     }
@@ -2964,7 +2982,7 @@ export default function CentralApp() {
                                 </strong>
                                 <p>{extractWhatsAppEventText(evento)}</p>
                                 <small>
-                                  {(evento.event ?? "evento").replaceAll(".", " / ")} â€¢{" "}
+                                  {(evento.event ?? "evento").replaceAll(".", " / ")} -{" "}
                                   {evento.criado_em
                                     ? `${formatDate(evento.criado_em)} ${formatTime(
                                         evento.criado_em
