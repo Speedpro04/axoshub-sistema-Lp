@@ -502,8 +502,8 @@ body {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  margin-left: auto;
+  justify-content: flex-start;
+  margin-left: 0;
 }
 
 .action-button {
@@ -517,14 +517,14 @@ body {
   align-items: center;
   padding: 10px 14px;
   background: #ffffff;
-  border: 1px solid var(--stroke);
+  border: 1px solid #00cec9;
   border-radius: 999px;
   font-size: 0.85rem;
   color: var(--text);
 }
 
 .status-chip--warn {
-  border-color: rgba(253, 203, 110, 0.7);
+  border-color: #00cec9;
   background: rgba(253, 203, 110, 0.15);
 }
 

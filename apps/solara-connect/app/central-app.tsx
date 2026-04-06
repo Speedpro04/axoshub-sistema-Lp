@@ -2047,29 +2047,6 @@ export default function CentralApp() {
               variants={containerVariants}
             >
               <motion.section className="dashboard-actions" variants={itemVariants}>
-                <div className="dashboard-actions-main">
-                  <button
-                    className="primary action-button"
-                    type="button"
-                    onClick={() => setAtendimentoModalOpen(true)}
-                  >
-                    + Novo atendimento
-                  </button>
-                  <button
-                    className="ghost action-button"
-                    type="button"
-                    onClick={() => setClientModalOpen(true)}
-                  >
-                    + Novo paciente
-                  </button>
-                  <button
-                    className="ghost action-button"
-                    type="button"
-                    onClick={() => setAgendaModalOpen(true)}
-                  >
-                    Agendar consulta
-                  </button>
-                </div>
                 <div className="dashboard-actions-status">
                   <div className={`status-chip ${loading ? "status-chip--warn" : ""}`}>
                     <div style={{ position: "relative", width: 8, height: 8, marginRight: 8 }}>
@@ -2122,6 +2099,29 @@ export default function CentralApp() {
                     aria-expanded={solaraOpen}
                   >
                     Solara AI
+                  </button>
+                </div>
+                <div className="dashboard-actions-main">
+                  <button
+                    className="primary action-button"
+                    type="button"
+                    onClick={() => setAtendimentoModalOpen(true)}
+                  >
+                    + Novo atendimento
+                  </button>
+                  <button
+                    className="ghost action-button"
+                    type="button"
+                    onClick={() => setClientModalOpen(true)}
+                  >
+                    + Novo paciente
+                  </button>
+                  <button
+                    className="ghost action-button"
+                    type="button"
+                    onClick={() => setAgendaModalOpen(true)}
+                  >
+                    Agendar consulta
                   </button>
                 </div>
               </motion.section>
