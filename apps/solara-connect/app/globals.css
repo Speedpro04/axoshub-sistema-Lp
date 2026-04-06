@@ -54,6 +54,7 @@ body {
   width: 285px;
   height: auto;
   margin-left: -35px;
+  margin-top: -25px;
 }
 
 .sidebar-title {
@@ -276,14 +277,13 @@ body {
 
 .logout-button {
   width: 100%;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 4px;
   padding: 12px 14px;
   font-size: 1.08rem;
   font-weight: 600;
-  color: #0b163f;
-  background: #f6f8fb;
-  border: 1px solid #cfd6df;
+  color: #ffffff;
+  background: #000f41;
   box-shadow: none;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -295,7 +295,8 @@ body {
 }
 
 .logout-button:hover {
-  background: #eef2f7;
+  background: #00165a;
+  border-color: rgba(129, 236, 236, 0.45);
   transform: translateY(-1px);
 }
 
