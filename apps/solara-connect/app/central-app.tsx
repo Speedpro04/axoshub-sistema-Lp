@@ -1901,7 +1901,6 @@ export default function CentralApp() {
             </button>
           ))}
         </nav>
-        <div className="sidebar-footer-gap" aria-hidden="true" />
         <div className="sidebar-footer">
           <button className="logout-button" type="button" onClick={handleLogout}>
             Sair
@@ -1915,7 +1914,7 @@ export default function CentralApp() {
           <div>
             <h1>Módulo de Recepção Digital</h1>
             <p>
-              Clínicas médicas, odontológicas, de emagrecimento e estéticas conectadas
+              Clínicas médicas, de emagrecimento e estéticas conectadas
               em tempo real.
             </p>
             {!hasSupabaseEnv() && (
