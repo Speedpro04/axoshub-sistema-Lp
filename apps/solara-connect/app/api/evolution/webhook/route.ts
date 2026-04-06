@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { requestGeminiReply } from "../../solara/solara-gemini";
 
 export const runtime = "nodejs";
+const BRAZIL_TZ = "America/Sao_Paulo";
 
 type EvolutionWebhookPayload = {
   event?: string;
@@ -754,8 +755,11 @@ export async function POST(request: Request) {
 
                 if (createdAppointment?.id) {
                   const localDate = new Date(createdAppointment.data_hora);
-                  const dateText = localDate.toLocaleDateString("pt-BR");
+                  const dateText = localDate.toLocaleDateString("pt-BR", {
+                    timeZone: BRAZIL_TZ,
+                  });
                   const timeText = localDate.toLocaleTimeString("pt-BR", {
+                    timeZone: BRAZIL_TZ,
                     hour: "2-digit",
                     minute: "2-digit",
                   });
@@ -872,7 +876,13 @@ export async function POST(request: Request) {
                 
                 // Nao sugerir horarios que ja passaram hoje
                 if (!isOccupied && current > now) {
-                  freeSlots[dayStr].push(current.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+              freeSlots[dayStr].push(
+                current.toLocaleTimeString("pt-BR", {
+                  timeZone: BRAZIL_TZ,
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              );
                 }
                 current.setMinutes(current.getMinutes() + 30);
               }

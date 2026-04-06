@@ -49,10 +49,10 @@ export function buildContextPrompt(context: Record<string, unknown>) {
     "sua clinica";
   
   // Formata o contexto de forma mais legivel para a IA
-  const formattedContext = `
+const formattedContext = `
 === MAPA MENTAL DA CLINICA ===
 NOME: ${clinicName}
-DATA/HORA ATUAL: ${new Date().toLocaleString('pt-BR')}
+DATA/HORA ATUAL: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
 ESPECIALISTAS: ${JSON.stringify(context.especialistas || [])}
 SERVICOS DISPONIVEIS: ${JSON.stringify(context.servicos || [])}
 HORARIOS DE FUNCIONAMENTO: ${JSON.stringify(context.horarios || [])}

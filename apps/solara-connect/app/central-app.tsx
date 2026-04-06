@@ -86,16 +86,22 @@ function Modal({ open, title, onClose, children, footer }: ModalProps) {
   );
 }
 
+const BRAZIL_TZ = "America/Sao_Paulo";
+
 function formatDate(value: string) {
   if (!value) return "--";
   const date = new Date(value);
-  return date.toLocaleDateString("pt-BR");
+  return date.toLocaleDateString("pt-BR", { timeZone: BRAZIL_TZ });
 }
 
 function formatTime(value: string) {
   if (!value) return "--";
   const date = new Date(value);
-  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString("pt-BR", {
+    timeZone: BRAZIL_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function formatMoney(value: number, hidden: boolean) {
@@ -709,6 +715,7 @@ export default function CentralApp() {
       const now = new Date();
       setClock(
         now.toLocaleTimeString("pt-BR", {
+          timeZone: BRAZIL_TZ,
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
