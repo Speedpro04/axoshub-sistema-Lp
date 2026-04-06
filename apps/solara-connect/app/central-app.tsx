@@ -88,6 +88,22 @@ function Modal({ open, title, onClose, children, footer }: ModalProps) {
 
 const BRAZIL_TZ = "America/Sao_Paulo";
 
+function cleanDisplayText(value: string) {
+  return value
+    .replace(/Â·|â€¢|•/g, " - ")
+    .replace(/Ã§/g, "ç")
+    .replace(/Ã£/g, "ã")
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã©/g, "é")
+    .replace(/Ãª/g, "ê")
+    .replace(/Ã­/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ã´/g, "ô")
+    .replace(/Ãº/g, "ú")
+    .replace(/\s+-\s+-\s+/g, " - ")
+    .trim();
+}
+
 function parseDateInput(value: string) {
   if (!value) return null;
   const normalized = value
@@ -168,7 +184,7 @@ function extractWhatsAppEventText(evento: EvolutionEventRow) {
         firstText(toRecord(record.imageMessage)?.caption) ??
         firstText(toRecord(record.videoMessage)?.caption) ??
         firstText(toRecord(record.documentMessage)?.caption);
-      if (direct) return direct;
+      if (direct) return cleanDisplayText(direct);
       queue.push(...Object.values(record));
     }
   }
@@ -176,7 +192,7 @@ function extractWhatsAppEventText(evento: EvolutionEventRow) {
   if (evento.media_type === "image") return "[Imagem recebida]";
   if (evento.media_type === "audio") return "[Áudio recebido]";
   if (evento.media_type) return `[Anexo ${evento.media_type}]`;
-  return evento.event ?? "Evento de WhatsApp";
+  return cleanDisplayText(evento.event ?? "Evento de WhatsApp");
 }
 
 function extractEventDirection(evento: EvolutionEventRow) {
@@ -209,8 +225,8 @@ function extractEventClientLabel(evento: EvolutionEventRow) {
     firstText(record?.pushName) ??
     firstText(record?.pushname) ??
     firstText(record?.senderName);
-  if (pushName && phone) return `${pushName} - ${phone}`;
-  if (pushName) return pushName;
+  if (pushName && phone) return cleanDisplayText(`${pushName} - ${phone}`);
+  if (pushName) return cleanDisplayText(pushName);
   if (phone) return phone;
   return "Cliente";
 }
@@ -2982,7 +2998,7 @@ export default function CentralApp() {
                                 </strong>
                                 <p>{extractWhatsAppEventText(evento)}</p>
                                 <small>
-                                  {(evento.event ?? "evento").replaceAll(".", " / ")} -{" "}
+                                  {cleanDisplayText((evento.event ?? "evento").replaceAll(".", " / "))} -{" "}
                                   {evento.criado_em
                                     ? `${formatDate(evento.criado_em)} ${formatTime(
                                         evento.criado_em
