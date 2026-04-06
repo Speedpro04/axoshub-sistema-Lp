@@ -308,6 +308,8 @@ body {
   justify-content: space-between;
   gap: 24px;
   align-items: flex-start;
+  margin: 0 -32px;
+  width: calc(100% + 64px);
   background: var(--primary);
   color: #ffffff;
   padding: 22px 24px 18px;
