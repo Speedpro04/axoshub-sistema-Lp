@@ -37,3 +37,9 @@
 - opcional em Windows: `NEXT_PUBLIC_CACHE_MODE=memurai`
 
 Para este PC, a recomendacao atual e seguir sem Redis local. A plataforma foi preparada para trocar de provider sem refatorar a camada web.
+
+## Seguranca de chaves
+
+- Nunca exponha segredos no frontend.
+- Use `NEXT_PUBLIC_*` somente para valores realmente publicos.
+- Chaves sensiveis (`SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `PAGBANK_TOKEN`, etc.) devem ficar apenas no backend/servidor.
