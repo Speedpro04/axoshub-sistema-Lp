@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  solara-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solara-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - solara-net
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: solara-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - solara-net
+    restart: unless-stopped
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solara-celery-worker
+    command: celery -A app.celery_app:celery_app worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - solara-net
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solara-celery-beat
+    command: celery -A app.celery_app:celery_app beat --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - solara-net
+    restart: unless-stopped
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solara-flower
+    command: celery -A app.celery_app:celery_app flower --port=5555 --basic_auth=admin:admin
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - solara-net
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+
+networks:
+  solara-net:
+    driver: bridge

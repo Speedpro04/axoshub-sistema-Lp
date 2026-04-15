@@ -171,6 +171,13 @@ def tenants_ensure(authorization: str | None = Header(default=None)) -> dict[str
     return {"ok": True, "created": created, "tenant_id": tenant_id}
 
 
+from app.tasks import test_task
+
 @app.get("/")
 def root() -> dict[str, str]:
     return {"service": "solara-api", "status": "running"}
+
+@app.post("/test-celery/{name}")
+def trigger_celery_test(name: str) -> dict[str, Any]:
+    task = test_task.delay(name)
+    return {"task_id": task.id, "status": "Tarefa enviada para a fila!"}
