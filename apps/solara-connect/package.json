@@ -11,10 +11,15 @@
   "dependencies": {
     "@solara/runtime": "0.1.0",
     "@supabase/supabase-js": "^2.49.1",
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
+    "easymde": "^2.20.0",
     "framer-motion": "^12.36.0",
+    "lucide-react": "^1.8.0",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "react-simplemde-editor": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "latest",
